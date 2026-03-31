@@ -1,0 +1,337 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* HAYA Design System — theblackcloset.co inspired */
+  --color-camel: #8B6F47;
+  --color-olive: #6B7F3B;
+  --color-sale: #C8102E;
+  --color-warm-bg: #FAFAFA;
+  --color-warm-border: #E5E2DD;
+  --color-warm-text: #1A1A1A;
+}
+
+:root {
+  --radius: 0.125rem;
+  --background: #FAFAFA;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --primary: #1A1A1A;
+  --primary-foreground: #FAFAFA;
+  --secondary: #F5F3F0;
+  --secondary-foreground: #1A1A1A;
+  --muted: #F5F3F0;
+  --muted-foreground: #6B6B6B;
+  --accent: #8B6F47;
+  --accent-foreground: #FFFFFF;
+  --destructive: #C8102E;
+  --border: #E5E2DD;
+  --input: #E5E2DD;
+  --ring: #8B6F47;
+  --chart-1: #8B6F47;
+  --chart-2: #1A1A1A;
+  --chart-3: #6B7F3B;
+  --chart-4: #F5F3F0;
+  --chart-5: #E5E2DD;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+/* ── Scrollbar — Elegant thin ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #C8C4BE; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #8B6F47; }
+* { scrollbar-width: thin; scrollbar-color: #C8C4BE transparent; }
+
+::selection {
+  background-color: rgba(139, 111, 71, 0.15);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body {
+    @apply bg-warm-bg text-warm-text antialiased;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+}
+
+/* ── Serif heading utility ── */
+.font-serif-heading {
+  font-family: var(--font-playfair), 'Georgia', 'Times New Roman', serif;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.anim-up {
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.anim-fade {
+  animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.anim-slide-down {
+  animation: slideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* ── Glass ── */
+.glass {
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* ── Image hover — elegant zoom ── */
+.img-hover { overflow: hidden; }
+.img-hover img {
+  transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.img-hover:hover img { transform: scale(1.04); }
+
+/* ── Product card hover overlay ── */
+.product-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.08);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.group:hover .product-overlay {
+  opacity: 1;
+}
+
+/* ── Nav link — elegant underline ── */
+.nav-link {
+  position: relative;
+  font-family: var(--font-inter), -apple-system, sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.6875rem;
+  transition: color 0.3s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #8B6F47;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+.nav-link:hover {
+  color: #8B6F47;
+}
+
+/* ── Hero gradient — warm editorial ── */
+.hero-grad {
+  background: linear-gradient(
+    to top,
+    rgba(26, 26, 26, 0.55) 0%,
+    rgba(26, 26, 26, 0.08) 40%,
+    rgba(26, 26, 26, 0.15) 100%
+  );
+}
+
+/* ── Form focus — warm camel ── */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px #8B6F47 !important;
+  border-color: #8B6F47 !important;
+}
+
+/* ── Custom scrollbar for drawers ── */
+.custom-scroll::-webkit-scrollbar { width: 3px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #C8C4BE; border-radius: 10px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Section heading — serif uppercase ── */
+.section-heading {
+  font-family: var(--font-playfair), 'Georgia', serif;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 400;
+}
+
+/* ── Button styles ── */
+.btn-primary {
+  background-color: #1A1A1A;
+  color: #FAFAFA;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.6875rem;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid #1A1A1A;
+}
+.btn-primary:hover {
+  background-color: #8B6F47;
+  border-color: #8B6F47;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #1A1A1A;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.6875rem;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid #1A1A1A;
+}
+.btn-secondary:hover {
+  background-color: #1A1A1A;
+  color: #FAFAFA;
+}
+
+/* ── Badge styles — elegant pills ── */
+.badge-new {
+  background-color: #1A1A1A;
+  color: #FAFAFA;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+}
+.badge-sale {
+  background-color: #C8102E;
+  color: #FFFFFF;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+}
+.badge-bestseller {
+  background-color: #6B7F3B;
+  color: #FFFFFF;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+}
+.badge-limited {
+  background-color: #1A1A1A;
+  color: #FAFAFA;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+}
+.badge-trending {
+  background-color: #8B6F47;
+  color: #FFFFFF;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+}
+.badge-bogo {
+  background-color: #1A1A1A;
+  color: #FAFAFA;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+}
+.badge-luxe {
+  background-color: #8B6F47;
+  color: #FFFFFF;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+}
+
+/* ── Horizontal scroll no-scrollbar ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Thin divider ── */
+.divider {
+  border-color: #E5E2DD;
+}
+
+/* ── Elegant star rating ── */
+.star-filled { color: #8B6F47; }
+.star-empty { color: #E5E2DD; }

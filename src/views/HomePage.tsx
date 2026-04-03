@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ArrowRight, Star, Send, Quote } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, Star, Send, Quote, Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { navigate } from '@/lib/router';
 import { newArrivals, bestSellers, saleItems, trendingItems } from '@/data/products';
@@ -11,6 +11,8 @@ import { collections } from '@/data/collections';
 import { testimonials } from '@/data/testimonials';
 import ProductCard from '@/components/product/ProductCard';
 import type { HomeSection } from '@/store/useStore';
+import { getShopifyProducts } from '@/lib/shopify-queries';
+import type { Product } from '@/data/products';
 
 /* ─── Section Header Component ─── */
 function SectionHeader({ title, subtitle, actionLabel, onAction }: {
@@ -627,6 +629,24 @@ export default function HomePage() {
   const homeSections = useStore((s) => s.homeSections);
   const storeProducts = useStore((s) => s.adminProducts);
   const storeCollections = useStore((s) => s.adminCollections);
+  const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const products = await getShopifyProducts();
+        setShopifyProducts(products);
+      } catch (error) {
+        console.error('Failed to load Shopify products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
+
+  const products = shopifyProducts.length > 0 ? shopifyProducts : storeProducts;
 
   const renderSection = (section: HomeSection) => {
     switch (section.type) {
@@ -640,7 +660,7 @@ export default function HomePage() {
             key={section.id}
             title={section.title}
             subtitle={section.subtitle}
-            items={bestSellers.length > 0 ? bestSellers : storeProducts.slice(0, 8)}
+            items={products.slice(0, 8)}
             actionLabel="View All"
             count={(section.config.count as number) || 8}
           />
@@ -651,7 +671,7 @@ export default function HomePage() {
             key={section.id}
             title={section.title}
             subtitle={section.subtitle}
-            items={storeProducts.slice(0, 4)}
+            items={products.slice(0, 4)}
             actionLabel="View All"
             count={(section.config.count as number) || 4}
           />

@@ -4,10 +4,12 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal, Grid3X3, Grid2X2, X, ChevronDown, Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { products, getProductsByCategory } from '@/data/products';
+import { products as localProducts } from '@/data/products';
 import { categories } from '@/data/categories';
 import ProductCard from '@/components/product/ProductCard';
 import { cn } from '@/lib/utils';
+import { getShopifyProducts } from '@/lib/shopify-queries';
+import type { Product } from '@/data/products';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -49,16 +51,35 @@ export default function ShopPage() {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
+  const [isLoadingShopify, setIsLoadingShopify] = useState(true);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Fetch products from Shopify
+  useEffect(() => {
+    async function loadShopifyProducts() {
+      try {
+        const products = await getShopifyProducts();
+        setShopifyProducts(products);
+      } catch (error) {
+        console.error('Failed to load Shopify products:', error);
+      } finally {
+        setIsLoadingShopify(false);
+      }
+    }
+    loadShopifyProducts();
+  }, []);
+
+  // Use Shopify products if available, otherwise fallback to local
+  const products = shopifyProducts.length > 0 ? shopifyProducts : localProducts;
 
   // Force re-render when category changes
   const categoryKey = `${activeCategory}-${sortBy}-${priceRange[0]}-${priceRange[1]}-${selectedColors.join(',')}`;
 
   const filteredProducts = useMemo(() => {
-    console.log('Filtering products, activeCategory:', activeCategory);
     let items = activeCategory === 'all'
       ? [...products]
-      : getProductsByCategory(activeCategory);
+      : products.filter(p => p.category === activeCategory);
 
     // Also filter by selected colors from sidebar
     if (selectedColors.length > 0) {
@@ -352,7 +373,12 @@ export default function ShopPage() {
 
         {/* Product Grid */}
         <div className="flex-1">
-          {filteredProducts.length === 0 ? (
+          {isLoadingShopify ? (
+            <div className="py-20 text-center">
+              <Loader2 size={32} className="animate-spin mx-auto text-[#8B6F47] mb-4" />
+              <p className="text-xs text-[#6B6560] font-light font-sans">Loading products...</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="py-20 text-center">
               <p className="font-serif-heading text-xl text-[#1C1614] mb-2">No products found</p>
               <p className="text-xs text-[#6B6560] font-light font-sans">Try adjusting your filters</p>

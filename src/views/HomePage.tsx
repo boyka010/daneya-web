@@ -552,7 +552,6 @@ export default function HomePage() {
 
   return (
     <div>
-      <OffersSection />
       {homeSections
         .filter((section) => section.enabled)
         .map((section) => renderSection(section))}

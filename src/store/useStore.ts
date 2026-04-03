@@ -343,8 +343,8 @@ const mockAdminCustomers: AdminCustomer[] = [
 ];
 
 const defaultAdminSettings: AdminSettings = {
-  storeName: "Daneya",
-  storeEmail: "hello@daneya.shop",
+  storeName: "Rose Antiqua",
+  storeEmail: "hello@roseantiqua.com",
   storePhone: "+20 155 791 2688",
   storeAddress: "Cairo, Egypt",
   currency: "EGP",

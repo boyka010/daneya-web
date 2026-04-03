@@ -42,40 +42,41 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* HAYA Design System — theblackcloset.co inspired */
-  --color-camel: #8B6F47;
-  --color-olive: #6B7F3B;
-  --color-sale: #C8102E;
-  --color-warm-bg: #FAFAFA;
-  --color-warm-border: #E5E2DD;
-  --color-warm-text: #1A1A1A;
+  /* Rose Antiqua Design System — Timeless Feminine Luxury */
+  --color-rose: #C4748C;
+  --color-gold: #C9A97A;
+  --color-ivory: #FAF7F4;
+  --color-charcoal: #1C1614;
+  --color-warm-bg: #FAF7F4;
+  --color-warm-border: #E8E4DF;
+  --color-warm-text: #1C1614;
 }
 
 :root {
   --radius: 0.125rem;
-  --background: #FAFAFA;
-  --foreground: #1A1A1A;
+  --background: #FAF7F4;
+  --foreground: #1C1614;
   --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
+  --card-foreground: #1C1614;
   --popover: #FFFFFF;
-  --popover-foreground: #1A1A1A;
-  --primary: #1A1A1A;
-  --primary-foreground: #FAFAFA;
-  --secondary: #F5F3F0;
-  --secondary-foreground: #1A1A1A;
-  --muted: #F5F3F0;
-  --muted-foreground: #6B6B6B;
-  --accent: #8B6F47;
-  --accent-foreground: #FFFFFF;
-  --destructive: #C8102E;
-  --border: #E5E2DD;
-  --input: #E5E2DD;
-  --ring: #8B6F47;
-  --chart-1: #8B6F47;
-  --chart-2: #1A1A1A;
-  --chart-3: #6B7F3B;
-  --chart-4: #F5F3F0;
-  --chart-5: #E5E2DD;
+  --popover-foreground: #1C1614;
+  --primary: #C4748C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5F2EE;
+  --secondary-foreground: #1C1614;
+  --muted: #F5F2EE;
+  --muted-foreground: #6B6560;
+  --accent: #C9A97A;
+  --accent-foreground: #1C1614;
+  --destructive: #B84C5A;
+  --border: #E8E4DF;
+  --input: #E8E4DF;
+  --ring: #C4748C;
+  --chart-1: #C4748C;
+  --chart-2: #1C1614;
+  --chart-3: #C9A97A;
+  --chart-4: #F5F2EE;
+  --chart-5: #E8E4DF;
 }
 
 html {
@@ -85,12 +86,12 @@ html {
 /* ── Scrollbar — Elegant thin ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #C8C4BE; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #8B6F47; }
-* { scrollbar-width: thin; scrollbar-color: #C8C4BE transparent; }
+::-webkit-scrollbar-thumb { background: #D4CFC8; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #C4748C; }
+* { scrollbar-width: thin; scrollbar-color: #D4CFC8 transparent; }
 
 ::selection {
-  background-color: rgba(139, 111, 71, 0.15);
+  background-color: rgba(196, 116, 140, 0.2);
 }
 
 @layer base {

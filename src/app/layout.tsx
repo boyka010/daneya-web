@@ -18,26 +18,28 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Daneya — Premium Modest Fashion",
+  title: "Rose Antiqua — Timeless Feminine Luxury",
   description:
-    "Discover the finest collection of premium modest fashion. Elegant abayas, stylish sets, and flowing capes crafted with love.",
+    "Discover elegant abayas, flowing capes, and sophisticated sets crafted for the modern woman. Timeless luxury meets modest fashion.",
   keywords: [
-    "Daneya",
+    "Rose Antiqua",
     "modest fashion",
     "abayas",
-    "premium hijab",
-    "luxury modest wear",
+    "luxury hijab",
+    "premium modest wear",
+    "elegant abaya",
     "Egyptian fashion",
+    "modest luxury",
   ],
   icons: {
     icon: "/images/logo.png",
   },
   openGraph: {
-    title: "Daneya — Premium Modest Fashion",
-    description: "Discover the finest collection of premium modest fashion. Elegant abayas, stylish sets, and flowing capes.",
+    title: "Rose Antiqua — Timeless Feminine Luxury",
+    description: "Discover elegant abayas, flowing capes, and sophisticated sets crafted for the modern woman.",
     type: "website",
     locale: "en_US",
-    siteName: "Daneya",
+    siteName: "Rose Antiqua",
   },
 };
 

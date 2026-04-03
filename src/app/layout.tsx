@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import AdTracking from "@/components/AdTracking";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -49,11 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="facebook-domain-verification" content="your-meta-verification-code" />
-      </head>
       <body className={`${playfair.variable} ${inter.variable} font-sans antialiased`}>
-        <AdTracking />
         {children}
         <Toaster />
       </body>

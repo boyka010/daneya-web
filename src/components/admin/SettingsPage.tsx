@@ -26,8 +26,10 @@ import {
   ImageIcon,
   Monitor,
   Package,
-  TrendingUp,
+  ShoppingBag,
   ExternalLink,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -38,6 +40,8 @@ export default function SettingsPage() {
 
   const [localSettings, setLocalSettings] = useState({ ...adminSettings });
   const [saved, setSaved] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const handleSave = () => {
     updateAdminSettings(localSettings);
@@ -45,14 +49,40 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
+  const testShopifyConnection = async () => {
+    if (!localSettings.shopifyStoreDomain || !localSettings.shopifyAccessToken) {
+      setTestResult({ success: false, message: 'Please enter your Shopify store domain and access token' });
+      return;
+    }
+
+    setTesting(true);
+    setTestResult(null);
+
+    try {
+      const response = await fetch(`/api/shopify/test?domain=${localSettings.shopifyStoreDomain}&token=${localSettings.shopifyAccessToken}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setTestResult({ success: true, message: 'Connection successful! Shopify store is connected.' });
+      } else {
+        setTestResult({ success: false, message: data.message || 'Failed to connect to Shopify' });
+      }
+    } catch (error) {
+      setTestResult({ success: false, message: 'Error connecting to Shopify' });
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const goToThemes = () => {
     setAdminSection('themes');
     window.location.hash = '#/admin/themes';
   };
 
+  const isShopifyConfigured = localSettings.shopifyStoreDomain && localSettings.shopifyAccessToken;
+
   return (
     <div className="space-y-6 max-w-3xl">
-      {/* Success Message */}
       {saved && (
         <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
           <Save size={16} />
@@ -60,74 +90,81 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-gray-900">Settings</h2>
         <p className="text-sm text-gray-500 mt-0.5">Manage your store configuration</p>
       </div>
 
-      {/* Ad Integrations */}
+      {/* Shopify Integration */}
       <Card className="border border-gray-200/60 shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2.5">
-            <div className="size-9 rounded-lg bg-pink-50 flex items-center justify-center">
-              <TrendingUp className="size-4 text-pink-600" />
+            <div className="size-9 rounded-lg bg-green-50 flex items-center justify-center">
+              <ShoppingBag className="size-4 text-green-600" />
             </div>
             <div>
-              <CardTitle className="text-base font-semibold text-gray-900">Ad Integrations</CardTitle>
-              <CardDescription className="text-xs text-gray-500">Connect your advertising platforms for conversion tracking</CardDescription>
+              <CardTitle className="text-base font-semibold text-gray-900">Shopify Integration</CardTitle>
+              <CardDescription className="text-xs text-gray-500">Connect your Shopify store for product syncing</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Meta (Facebook) Pixel ID</Label>
+            <Label>Shopify Store Domain</Label>
             <Input
-              value={localSettings.metaPixelId}
-              onChange={(e) => setLocalSettings({ ...localSettings, metaPixelId: e.target.value })}
-              placeholder="e.g., 1234567890123456"
+              value={localSettings.shopifyStoreDomain}
+              onChange={(e) => setLocalSettings({ ...localSettings, shopifyStoreDomain: e.target.value })}
+              placeholder="your-store.myshopify.com"
             />
-            <p className="text-xs text-gray-400">Find your Pixel ID in Facebook Events Manager</p>
+            <p className="text-xs text-gray-400">Enter your Shopify store domain without https://</p>
           </div>
           <div className="space-y-2">
-            <Label>Google Ads Conversion ID</Label>
+            <Label>Storefront Access Token</Label>
             <Input
-              value={localSettings.googleAdsId}
-              onChange={(e) => setLocalSettings({ ...localSettings, googleAdsId: e.target.value })}
-              placeholder="e.g., AW-123456789"
+              type="password"
+              value={localSettings.shopifyAccessToken}
+              onChange={(e) => setLocalSettings({ ...localSettings, shopifyAccessToken: e.target.value })}
+              placeholder="shpat_xxxxxxxxxxxxxxxxxxxxx"
             />
-            <p className="text-xs text-gray-400">Find your Conversion ID in Google Ads</p>
+            <p className="text-xs text-gray-400">
+              Get this from your Shopify admin: Apps → Headless → Create storefront access token
+            </p>
           </div>
-          <div className="space-y-2">
-            <Label>TikTok Pixel ID</Label>
-            <Input
-              value={localSettings.tiktokPixelId}
-              onChange={(e) => setLocalSettings({ ...localSettings, tiktokPixelId: e.target.value })}
-              placeholder="e.g., C34Q2K5XHM"
-            />
-            <p className="text-xs text-gray-400">Find your Pixel ID in TikTok Events Manager</p>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={testShopifyConnection}
+              disabled={testing || !isShopifyConfigured}
+              className="gap-2"
+            >
+              {testing ? 'Testing...' : 'Test Connection'}
+            </Button>
+            {testResult && (
+              <div className={`flex items-center gap-2 text-sm ${testResult.success ? 'text-green-600' : 'text-red-600'}`}>
+                {testResult.success ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                {testResult.message}
+              </div>
+            )}
           </div>
           <div className="pt-2">
             <a 
-              href="https://developers.facebook.com/docs/facebook-pixel" 
+              href="https://shopify.dev/docs/api/storefront" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
             >
               <ExternalLink size={12} />
-              Learn about Meta Pixel
-            </a>
-            <span className="mx-2 text-gray-300">|</span>
-            <a 
-              href="https://support.google.com/google-ads/answer/1722022" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-            >
-              <ExternalLink size={12} />
-              Learn about Google Ads
+              Learn about Shopify Storefront API
             </a>
           </div>
+          {isShopifyConfigured && (
+            <div className="rounded-lg bg-green-50 border border-green-200 p-3 mt-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="size-4 text-green-600" />
+                <span className="text-sm text-green-700">Shopify is connected - Products will sync from Shopify</span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -226,7 +263,6 @@ export default function SettingsPage() {
                 <SelectItem value="ar">العربية (Arabic)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-400">Changes the storefront display language</p>
           </div>
         </CardContent>
       </Card>
@@ -250,7 +286,6 @@ export default function SettingsPage() {
               <Label>Standard Shipping (EGP)</Label>
               <Input
                 type="number"
-                step="1"
                 value={localSettings.standardShipping}
                 onChange={(e) =>
                   setLocalSettings({ ...localSettings, standardShipping: parseFloat(e.target.value) || 0 })
@@ -261,7 +296,6 @@ export default function SettingsPage() {
               <Label>Express Shipping (EGP)</Label>
               <Input
                 type="number"
-                step="1"
                 value={localSettings.expressShipping}
                 onChange={(e) =>
                   setLocalSettings({ ...localSettings, expressShipping: parseFloat(e.target.value) || 0 })
@@ -273,13 +307,11 @@ export default function SettingsPage() {
             <Label>Free Shipping Threshold (EGP)</Label>
             <Input
               type="number"
-              step="1"
               value={localSettings.freeShippingThreshold}
               onChange={(e) =>
                 setLocalSettings({ ...localSettings, freeShippingThreshold: parseFloat(e.target.value) || 0 })
               }
             />
-            <p className="text-xs text-gray-400">Orders above this amount qualify for free shipping</p>
           </div>
         </CardContent>
       </Card>
@@ -326,65 +358,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* CDN Settings */}
-      <Card className="border border-gray-200/60 shadow-sm">
-        <CardHeader>
-          <div className="flex items-center gap-2.5">
-            <div className="size-9 rounded-lg bg-cyan-50 flex items-center justify-center">
-              <Monitor className="size-4 text-cyan-600" />
-            </div>
-            <div>
-              <CardTitle className="text-base font-semibold text-gray-900">CDN Settings</CardTitle>
-              <CardDescription className="text-xs text-gray-500">Content delivery network configuration</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>CDN Base URL</Label>
-            <Input
-              value={localSettings.cdnUrl}
-              onChange={(e) => setLocalSettings({ ...localSettings, cdnUrl: e.target.value })}
-              placeholder="https://cdn.example.com"
-            />
-            <p className="text-xs text-gray-400">
-              Leave empty to use local images. Enter CDN base URL for optimized delivery (e.g., https://cdn.example.com)
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Image Optimization */}
-      <Card className="border border-gray-200/60 shadow-sm">
-        <CardHeader>
-          <div className="flex items-center gap-2.5">
-            <div className="size-9 rounded-lg bg-pink-50 flex items-center justify-center">
-              <ImageIcon className="size-4 text-pink-600" />
-            </div>
-            <div>
-              <CardTitle className="text-base font-semibold text-gray-900">Image Optimization</CardTitle>
-              <CardDescription className="text-xs text-gray-500">Automatic image handling</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg bg-gray-50 border border-gray-100 p-4">
-            <div className="flex items-start gap-3">
-              <div className="size-8 rounded-lg bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
-                <Package className="size-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Next.js Image Optimization Active</p>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                  Images are automatically optimized with WebP format, lazy loading, and responsive sizes.
-                  No additional configuration is needed — Next.js handles image optimization out of the box.
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Notification Settings */}
       <Card className="border border-gray-200/60 shadow-sm">
         <CardHeader>
@@ -421,19 +394,6 @@ export default function SettingsPage() {
               checked={localSettings.shippingUpdates}
               onCheckedChange={(checked) =>
                 setLocalSettings({ ...localSettings, shippingUpdates: checked })
-              }
-            />
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Marketing Emails</p>
-              <p className="text-xs text-gray-500">Send promotional emails to customers</p>
-            </div>
-            <Switch
-              checked={localSettings.marketingEmails}
-              onCheckedChange={(checked) =>
-                setLocalSettings({ ...localSettings, marketingEmails: checked })
               }
             />
           </div>

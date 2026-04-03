@@ -82,9 +82,8 @@ export interface AdminSettings {
   cdnUrl: string;
   language: string;
   activeTheme: string;
-  metaPixelId: string;
-  googleAdsId: string;
-  tiktokPixelId: string;
+  shopifyStoreDomain: string;
+  shopifyAccessToken: string;
 }
 
 // ── Home Section Types ──
@@ -344,10 +343,10 @@ const mockAdminCustomers: AdminCustomer[] = [
 ];
 
 const defaultAdminSettings: AdminSettings = {
-  storeName: "HAYA",
-  storeEmail: "hello@haya.store",
-  storePhone: "+1 (555) 123-4567",
-  storeAddress: "123 Fashion Ave, New York, NY 10001",
+  storeName: "Daneya",
+  storeEmail: "hello@daneya.shop",
+  storePhone: "+20 155 791 2688",
+  storeAddress: "Cairo, Egypt",
   currency: "EGP",
   standardShipping: 80,
   expressShipping: 140,
@@ -360,9 +359,8 @@ const defaultAdminSettings: AdminSettings = {
   cdnUrl: "",
   language: "en",
   activeTheme: "gymshark",
-  metaPixelId: "",
-  googleAdsId: "",
-  tiktokPixelId: "",
+  shopifyStoreDomain: "",
+  shopifyAccessToken: "",
 };
 
 /**

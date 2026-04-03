@@ -1,8 +1,8 @@
 const SHOPIFY_STOREFRONT_API_VERSION = '2024-01';
 
 export const SHOPIFY_CONFIG: ShopifyConfig = {
-  storeDomain: process.env.SHOPIFY_STORE_DOMAIN || 'your-store.myshopify.com',
-  accessToken: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || '',
+  storeDomain: process.env.SHOPIFY_STORE_DOMAIN || '123c0f-66.myshopify.com',
+  accessToken: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || '3a2d21ae923c5fa16221cd2e74c52edc',
 };
 
 export interface ShopifyConfig {

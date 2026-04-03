@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight, Star, Send, Quote } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { navigate } from '@/lib/router';
-import { newArrivals, bestSellers, saleItems, trendingItems, outletProducts } from '@/data/products';
+import { newArrivals, bestSellers, saleItems, trendingItems } from '@/data/products';
 import { collections } from '@/data/collections';
 import { testimonials } from '@/data/testimonials';
 import ProductCard from '@/components/product/ProductCard';
@@ -76,25 +76,48 @@ function TrustBadges() {
   );
 }
 
-/* ─── Flash Sale Banner ─── */
-function FlashSaleBanner() {
-  const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() + 3);
-  
+/* ─── Offers Section - 3 Offers ─── */
+function OffersSection() {
   return (
-    <section className="relative bg-gradient-to-r from-pink-600 to-rose-500 py-4 overflow-hidden">
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNHptLTEzLTRjLS41MTIgMC0uOTI4LjQxNi0uOTI4LjkyOHMuNDE2LjkyOC45MjguOTI4LjkyOC0uNDE2LjkyOC0uOTI4LjQxNi0uOTI4LS45MjgtLjkyOHoiIGZpbGw9IiNmZmYiLz48L2c+PC9zdmc+')] animate-[slide_20s_linear_infinite]" />
-      </div>
-      <div className="relative px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto flex items-center justify-center gap-4">
-        <span className="text-white text-xs font-bold uppercase tracking-wider">🔥 FLASH SALE</span>
-        <span className="text-white/90 text-xs">Up to 70% OFF - Limited Time Only!</span>
-        <button
-          onClick={() => navigate({ type: 'shop' })}
-          className="bg-white text-pink-600 px-4 py-1.5 text-xs font-bold uppercase tracking-wider hover:bg-pink-50 transition-colors"
-        >
-          Shop Now
-        </button>
+    <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        {[
+          {
+            title: 'Buy 1 Get 1',
+            subtitle: 'Free abaya on all sets',
+            bg: 'bg-gradient-to-r from-rose-500 to-pink-500',
+            icon: '🎁',
+          },
+          {
+            title: 'Flash Sale',
+            subtitle: 'Up to 70% OFF',
+            bg: 'bg-gradient-to-r from-amber-500 to-orange-500',
+            icon: '⚡',
+          },
+          {
+            title: 'Free Shipping',
+            subtitle: 'Orders over EGP 2,000',
+            bg: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+            icon: '🚚',
+          },
+        ].map((offer, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            onClick={() => navigate({ type: 'shop' })}
+            className={`${offer.bg} p-6 rounded-xl cursor-pointer hover:opacity-90 transition-opacity group`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{offer.icon}</span>
+              <div>
+                <h3 className="text-white font-semibold text-lg">{offer.title}</h3>
+                <p className="text-white/80 text-sm">{offer.subtitle}</p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
@@ -529,26 +552,11 @@ export default function HomePage() {
 
   return (
     <div>
-      <FlashSaleBanner />
+      <OffersSection />
       {homeSections
         .filter((section) => section.enabled)
         .map((section) => renderSection(section))}
       <TrustBadges />
-      
-      {/* Outlet Products Section */}
-      <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
-        <SectionHeader
-          title="Flash Sale - Outlet"
-          subtitle="Limited Time Offers"
-          actionLabel="View All"
-          onAction={() => navigate({ type: 'shop' })}
-        />
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-8 sm:gap-y-10">
-          {outletProducts.slice(0, 8).map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

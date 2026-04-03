@@ -1,4 +1,4 @@
-const SHOPIFY_STOREFRONT_API_VERSION = '2024-01';
+const SHOPIFY_STOREFRONT_API_VERSION = '2026-04';
 
 export interface ShopifyConfig {
   storeDomain: string;

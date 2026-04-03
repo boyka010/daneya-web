@@ -37,7 +37,7 @@ export default function AboutPage() {
           <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
-      description: 'HAYA connects women across 50+ countries through a shared love of modest fashion that empowers self-expression.',
+      description: 'DANEYA connects women across 50+ countries through a shared love of modest fashion that empowers self-expression.',
     },
   ];
 
@@ -53,7 +53,7 @@ export default function AboutPage() {
       <section className="relative h-[60vh] sm:h-[70vh] overflow-hidden">
         <Image
           src="/images/hero/about-hero.png"
-          alt="About HAYA"
+          alt="About DANEYA"
           fill
           className="object-cover"
           sizes="100vw"
@@ -94,7 +94,7 @@ export default function AboutPage() {
             </div>
             <div className="anim-up" style={{ animationDelay: '0.1s' }}>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                HAYA was born from a simple belief: that modest fashion deserves the same
+                DANEYA was born from a simple belief: that modest fashion deserves the same
                 level of artistry, quality, and attention as the world&apos;s finest luxury brands.
               </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed mt-4">
@@ -104,30 +104,10 @@ export default function AboutPage() {
                 feel extraordinary against the skin, and last for years to come.
               </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed mt-4">
-                Our name, HAYA, means &ldquo;modesty&rdquo; and &ldquo;life&rdquo; — a duality that
+                Our name, DANEYA, means &ldquo;modesty&rdquo; and &ldquo;life&rdquo; — a duality that
                 captures our mission: to bring vitality and joy to modest fashion,
                 proving that covering can be just as expressive as any other form of style.
               </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Full-Width Lifestyle Image ── */}
-      <section className="w-full">
-        <div className="relative aspect-[21/9] bg-gray-100 overflow-hidden anim-up">
-          <Image
-            src="/images/lifestyle/lifestyle-2.png"
-            alt="HAYA lifestyle"
-            fill
-            className="object-cover"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white uppercase">
-                BE BOLD. BE HAYA.
-              </h2>
             </div>
           </div>
         </div>
@@ -196,7 +176,7 @@ export default function AboutPage() {
       <section className="bg-[#0A0A0A] py-16 sm:py-24 border-t border-white/10">
         <div className="max-w-xl mx-auto px-4 sm:px-8 text-center">
           <h2 className="text-2xl sm:text-4xl font-black text-white uppercase leading-tight">
-            JOIN THE HAYA FAMILY
+            JOIN THE DANEYA FAMILY
           </h2>
           <p className="text-sm text-gray-400 mt-3">
             New arrivals, exclusive offers, and the stories behind our collections.

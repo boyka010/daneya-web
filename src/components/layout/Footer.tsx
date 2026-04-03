@@ -48,22 +48,17 @@ const footerLinks = {
   shop: [
     { label: 'New Arrivals', action: () => navigate({ type: 'shop' }) },
     { label: 'Abayas', action: () => navigate({ type: 'shop', category: 'abayas' }) },
-    { label: 'Dresses', action: () => navigate({ type: 'shop', category: 'dresses' }) },
     { label: 'Sets', action: () => navigate({ type: 'shop', category: 'sets' }) },
     { label: 'Capes', action: () => navigate({ type: 'shop', category: 'capes' }) },
-    { label: 'Scarves', action: () => navigate({ type: 'shop', category: 'scarves' }) },
   ],
   about: [
     { label: 'Our Story', action: () => navigate({ type: 'about' }) },
-    { label: 'Sustainability', action: () => {} },
-    { label: 'Careers', action: () => {} },
   ],
   help: [
     { label: 'Shipping & Delivery', action: () => {} },
     { label: 'Returns & Exchanges', action: () => {} },
     { label: 'Size Guide', action: () => {} },
     { label: 'Contact Us', action: () => {} },
-    { label: 'FAQ', action: () => {} },
   ],
 };
 
@@ -162,7 +157,7 @@ export default function Footer() {
       <div className="border-t border-white/8">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[10px] text-white/30 tracking-wider font-light">
-            &copy; 2025 HAYA. All rights reserved.
+            &copy; 2025 DANEYA. All rights reserved.
           </p>
           <div className="flex items-center gap-2 opacity-40">
             {['Visa', 'Mastercard', 'Amex', 'Apple Pay', 'Google Pay'].map((name) => (

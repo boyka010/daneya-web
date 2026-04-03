@@ -1,17 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Heart, Eye, ShoppingBag, Star } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { navigate } from '@/lib/router';
 import { useStore } from '@/store/useStore';
+import { useShopifyCart } from '@/hooks/useShopifyCart';
 import type { Product } from '@/data/products';
 import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
   index?: number;
+  priority?: boolean;
 }
 
 function getBadgeClass(badge: string): string {
@@ -40,46 +42,71 @@ function renderStars(rating: number) {
   );
 }
 
-export default function ProductCard({ product, index = 0 }: ProductCardProps) {
+export default function ProductCard({ product, index = 0, priority = false }: ProductCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [hoveredColor, setHoveredColor] = useState<string | null>(null);
+  const [showSizes, setShowSizes] = useState(false);
+  
   const toggleWishlist = useStore((s) => s.toggleWishlist);
   const isInWishlist = useStore((s) => s.isInWishlist(product.id));
-  const addToCart = useStore((s) => s.addToCart);
   const setQuickViewProduct = useStore((s) => s.setQuickViewProduct);
+  const { addItem, isPending } = useShopifyCart();
 
-  const handleAddToBag = (e: React.MouseEvent) => {
+  const handleNavigate = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1, product.colors[0]?.name || '');
-  };
+    navigate({ type: 'product', id: product.id });
+  }, [product.id]);
 
-  const handleQuickView = (e: React.MouseEvent) => {
+  const handleQuickView = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     setQuickViewProduct(product);
-  };
+  }, [product, setQuickViewProduct]);
+
+  const handleAddToCart = useCallback((e: React.MouseEvent, size?: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, 1, hoveredColor || product.colors[0]?.name || '', undefined);
+  }, [product, hoveredColor, addItem]);
+
+  const handleToggleWishlist = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist(product.id);
+  }, [product.id, toggleWishlist]);
+
+  const currentImage = hoveredColor && product.images.length > 1
+    ? product.images[product.colors.findIndex(c => c.name === hoveredColor) % product.images.length] || product.image
+    : product.image;
+
+  const isLowStock = product.stock !== undefined && product.stock > 0 && product.stock <= 5;
+  const isOutOfStock = product.stock === 0;
 
   return (
     <motion.div
-      className="group cursor-pointer"
+      className="group flex flex-col relative"
       style={{ animationDelay: `${index * 0.06}s` }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: index * 0.06 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => { setIsHovered(true); setShowSizes(true); }}
+      onMouseLeave={() => { setIsHovered(false); setShowSizes(false); }}
     >
-      {/* Image Container */}
+      {/* Image Container - CLICK TO NAVIGATE */}
       <div
-        className="relative aspect-[3/4] bg-secondary mb-3.5 overflow-hidden"
-        onClick={() => navigate({ type: 'product', id: product.id })}
+        className="relative aspect-[3/4] bg-[#F5F2EE] mb-3.5 overflow-hidden cursor-pointer"
+        onClick={handleNavigate}
+        role="link"
+        aria-label={`View ${product.name} details`}
       >
         {!imgLoaded && (
-          <div className="absolute inset-0 bg-secondary animate-pulse" />
+          <div className="absolute inset-0 bg-[#F5F2EE] animate-pulse" />
         )}
 
-        {/* Main image */}
         <Image
-          src={product.image}
+          src={currentImage}
           alt={product.name}
           fill
           className={cn(
@@ -89,6 +116,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           )}
           onLoad={() => setImgLoaded(true)}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          priority={priority}
         />
 
         {/* Badge */}
@@ -100,20 +128,29 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           </div>
         )}
 
-        {/* Sold out overlay */}
-        {product.stock !== undefined && product.stock === 0 && (
+        {/* Low Stock */}
+        {isLowStock && (
+          <div className="absolute top-3 right-3 z-10">
+            <span className="text-[8px] font-medium uppercase tracking-wider px-2 py-1 bg-[#C8102E] text-white">
+              Only {product.stock} left
+            </span>
+          </div>
+        )}
+
+        {/* Out of Stock Overlay */}
+        {isOutOfStock && (
           <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
-            <span className="text-xs font-medium uppercase tracking-[0.15em] text-warm-text font-sans">
+            <span className="text-xs font-medium uppercase tracking-[0.15em] text-[#1C1614]">
               Sold Out
             </span>
           </div>
         )}
 
-        {/* Wishlist heart */}
+        {/* Wishlist Heart */}
         <motion.button
-          onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
+          onClick={handleToggleWishlist}
           className={cn(
-            'absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 transition-all duration-300 z-10',
+            'absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 transition-all duration-300 z-20',
             isHovered || isInWishlist ? 'opacity-100' : 'opacity-0'
           )}
           whileTap={{ scale: 0.9 }}
@@ -122,37 +159,78 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           <Heart
             size={14}
             strokeWidth={1.5}
-            className={isInWishlist ? 'fill-sale text-sale' : 'text-warm-text'}
+            className={isInWishlist ? 'fill-sale text-sale' : 'text-[#1C1614]'}
           />
         </motion.button>
 
-        {/* Hover overlay with Quick View + Add to Bag */}
-        <div className="product-overlay z-10">
-          <div className="flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-400">
-            <button
-              onClick={handleQuickView}
-              className="flex items-center gap-2 bg-white text-warm-text px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-warm-text hover:text-white transition-all duration-300 font-sans"
+        {/* Hover Overlay with Actions */}
+        <AnimatePresence>
+          {!isOutOfStock && isHovered && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 z-10 flex items-center justify-center bg-[#1C1614]/5"
+              onClick={handleNavigate}
             >
-              <Eye size={13} strokeWidth={1.5} />
-              Quick View
-            </button>
-            <button
-              onClick={handleAddToBag}
-              className="flex items-center gap-2 bg-warm-text text-white px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-camel transition-all duration-300 font-sans"
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={handleQuickView}
+                  className="flex items-center gap-2 bg-white text-[#1C1614] px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#1C1614] hover:text-white transition-all duration-300 font-sans"
+                >
+                  <Eye size={13} strokeWidth={1.5} />
+                  Quick View
+                </button>
+                <button
+                  onClick={(e) => handleAddToCart(e)}
+                  disabled={isPending}
+                  className="flex items-center gap-2 bg-[#1C1614] text-white px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#8B6F47] transition-all duration-300 font-sans disabled:opacity-50"
+                >
+                  <ShoppingBag size={13} strokeWidth={1.5} />
+                  {isPending ? 'Adding...' : 'Add to Bag'}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Quick Add Sizes on Hover */}
+        <AnimatePresence>
+          {showSizes && !isOutOfStock && product.sizes.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute bottom-3 left-3 right-3 z-20"
+              onClick={(e) => e.preventDefault()}
             >
-              <ShoppingBag size={13} strokeWidth={1.5} />
-              Add to Bag
-            </button>
-          </div>
-        </div>
+              <div className="flex items-center justify-center gap-1 bg-white/95 py-2 px-2">
+                {product.sizes.slice(0, 5).map((size) => (
+                  <button
+                    key={size}
+                    onClick={(e) => handleAddToBag(e, size)}
+                    className="min-w-[32px] h-7 text-[10px] font-medium text-[#1C1614] hover:bg-[#1C1614] hover:text-white border border-[#E8E4DF] transition-all duration-200 font-sans"
+                  >
+                    {size}
+                  </button>
+                ))}
+                {product.sizes.length > 5 && (
+                  <span className="text-[9px] text-[#6B6560] ml-1">+{product.sizes.length - 5}</span>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Product Info */}
+      {/* Product Info - CLICK TO NAVIGATE */}
       <div
         className="cursor-pointer"
-        onClick={() => navigate({ type: 'product', id: product.id })}
+        onClick={handleNavigate}
       >
-        <h3 className="font-serif-heading text-[0.9375rem] font-medium text-warm-text leading-snug truncate">
+        <h3 className="font-serif-heading text-[0.9375rem] font-medium text-[#1C1614] leading-snug truncate hover:text-[#8B6F47] transition-colors">
           {product.name}
         </h3>
 
@@ -160,17 +238,21 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         {product.colors.length > 1 && (
           <div className="flex items-center gap-1.5 mt-2">
             {product.colors.slice(0, 5).map((color) => (
-              <span
+              <button
                 key={color.name}
-                className="w-3 h-3 rounded-full border border-warm-border inline-block"
+                onMouseEnter={() => setHoveredColor(color.name)}
+                onMouseLeave={() => setHoveredColor(null)}
+                onClick={(e) => e.preventDefault()}
+                className={cn(
+                  'w-3 h-3 rounded-full border border-[#E8E4DF] inline-block transition-all',
+                  hoveredColor === color.name && 'ring-2 ring-[#8B6F47] ring-offset-1'
+                )}
                 style={{ backgroundColor: color.hex }}
                 title={color.name}
               />
             ))}
             {product.colors.length > 5 && (
-              <span className="text-[9px] text-muted-foreground font-light ml-0.5">
-                +{product.colors.length - 5}
-              </span>
+              <span className="text-[9px] text-[#6B6560] ml-0.5">+{product.colors.length - 5}</span>
             )}
           </div>
         )}
@@ -178,17 +260,17 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Rating */}
         <div className="flex items-center gap-2 mt-1.5">
           {renderStars(product.rating)}
-          <span className="text-[10px] text-muted-foreground font-light">({product.reviews})</span>
+          <span className="text-[10px] text-[#6B6560] font-light">({product.reviews})</span>
         </div>
 
         {/* Price */}
         <div className="flex items-center gap-2 mt-1.5">
-          <p className="text-sm font-medium text-warm-text font-sans">
-            EGP {product.price.toLocaleString()}
+          <p className="text-sm font-medium text-[#1C1614] font-sans">
+            EGP {product.price.toLocaleString('en-US')}
           </p>
           {product.originalPrice && (
-            <p className="text-xs text-muted-foreground line-through font-light">
-              EGP {product.originalPrice.toLocaleString()}
+            <p className="text-xs text-[#6B6560] line-through font-light">
+              EGP {product.originalPrice.toLocaleString('en-US')}
             </p>
           )}
           {product.originalPrice && (
@@ -199,12 +281,13 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         </div>
       </div>
 
-      {/* Mobile add to bag */}
+      {/* Mobile Add to Bag Button */}
       <button
-        onClick={handleAddToBag}
-        className="mt-3 w-full py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-warm-text border border-warm-border hover:bg-warm-text hover:text-white hover:border-warm-text transition-all duration-300 lg:hidden font-sans"
+        onClick={(e) => handleAddToBag(e)}
+        disabled={isOutOfStock || isPending}
+        className="mt-3 w-full py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#1C1614] border border-[#E8E4DF] hover:bg-[#1C1614] hover:text-white hover:border-[#1C1614] transition-all duration-300 lg:hidden font-sans disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Add to Bag
+        {isOutOfStock ? 'Sold Out' : isPending ? 'Adding...' : 'Add to Bag'}
       </button>
     </motion.div>
   );

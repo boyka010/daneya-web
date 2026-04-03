@@ -220,6 +220,17 @@ input:focus, select:focus, textarea:focus {
 .custom-scroll::-webkit-scrollbar-thumb { background: #C8C4BE; border-radius: 10px; }
 .custom-scroll::-webkit-scrollbar-track { background: transparent; }
 
+/* ── Safe area for iOS bottom nav ── */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}
+
 /* ── Section heading — serif uppercase ── */
 .section-heading {
   font-family: var(--font-playfair), 'Georgia', serif;

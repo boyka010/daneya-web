@@ -23,18 +23,18 @@ function SectionHeader({ title, subtitle, actionLabel, onAction }: {
     <div className="flex items-end justify-between mb-8 sm:mb-10">
       <div>
         {subtitle && (
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-camel mb-2 font-sans">
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#8B6F47] mb-2 font-sans">
             {subtitle}
           </p>
         )}
-        <h2 className="section-heading text-xl sm:text-2xl lg:text-[1.75rem] text-warm-text">
+        <h2 className="section-heading text-xl sm:text-2xl lg:text-[1.75rem] text-[#1C1614]">
           {title}
         </h2>
       </div>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-warm-text hover:text-camel transition-colors font-sans group"
+          className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#1C1614] hover:text-[#8B6F47] transition-colors font-sans group"
         >
           {actionLabel}
           <ArrowRight size={12} strokeWidth={1.5} className="transition-transform group-hover:translate-x-1" />
@@ -47,7 +47,7 @@ function SectionHeader({ title, subtitle, actionLabel, onAction }: {
 /* ─── Trust Badges ─── */
 function TrustBadges() {
   return (
-    <section className="py-8 bg-secondary/30 border-y border-warm-border">
+    <section className="py-8 bg-[#F5F2EE] border-y border-[#E8E4DF]">
       <div className="px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
@@ -128,36 +128,44 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
   const slides = [
     {
       image: '/images/hero/hero-1.png',
+      overline: 'NEW COLLECTION',
       title: 'Eid Al-Fitr Edit',
-      subtitle: 'Premium modest fashion crafted for the modern woman',
+      subtitle: 'Discover the new modest luxury collection',
       cta: 'Shop Collection',
+      link: 'shop',
     },
     {
       image: '/images/hero/hero-2.png',
-      title: 'New Arrivals',
-      subtitle: 'Discover our latest collection of timeless essentials',
+      overline: 'JUST ARRIVED',
+      title: 'The Art of Simplicity',
+      subtitle: 'Where contemporary elegance meets timeless modesty',
       cta: 'Explore Now',
+      link: 'shop',
     },
     {
       image: '/images/hero/hero-3.png',
-      title: 'The Art of Simplicity',
-      subtitle: 'Where modesty meets contemporary elegance',
-      cta: 'Shop Now',
+      overline: 'EXCLUSIVE',
+      title: 'Quiet Luxury',
+      subtitle: 'Crafted for the modern woman who values distinction',
+      cta: 'Discover',
+      link: 'shop',
     },
   ];
 
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const interval = (config.interval as number) || 7;
+  const interval = (config.interval as number) || 6;
   const autoplay = config.autoplay !== false;
+  const [progress, setProgress] = useState(0);
 
   const goTo = useCallback((index: number) => {
-    if (isTransitioning) return;
+    if (isTransitioning || index === current) return;
     setIsTransitioning(true);
+    setProgress(0);
     setCurrent(index);
-    setTimeout(() => setIsTransitioning(false), 800);
-  }, [isTransitioning]);
+    setTimeout(() => setIsTransitioning(false), 1000);
+  }, [isTransitioning, current]);
 
   const goNext = useCallback(() => goTo((current + 1) % slides.length), [current, goTo, slides.length]);
   const goPrev = useCallback(() => goTo((current - 1 + slides.length) % slides.length), [current, goTo, slides.length]);
@@ -169,18 +177,27 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
     }
   }, [autoplay, goNext, interval]);
 
+  useEffect(() => {
+    if (autoplay && !isTransitioning) {
+      const timer = setInterval(() => {
+        setProgress(p => p >= 100 ? 0 : p + (100 / (interval * 10)));
+      }, 100);
+      return () => clearInterval(timer);
+    }
+  }, [autoplay, isTransitioning, interval]);
+
   const slide = slides[current];
 
   return (
-    <section className="relative w-full h-[85vh] sm:h-[90vh] overflow-hidden bg-warm-text">
-      {/* Background Image */}
+    <section className="relative w-full h-[70vh] sm:h-[80vh] lg:h-[85vh] overflow-hidden bg-[#1C1614]">
+      {/* Background Image with Ken Burns Effect */}
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ scale: 1.15, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-0"
         >
           <Image
@@ -194,74 +211,139 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
         </motion.div>
       </AnimatePresence>
 
-      {/* Overlay */}
-      <div className="hero-grad absolute inset-0" />
+      {/* Elegant Dark Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#1C1614]/80 via-[#1C1614]/30 to-transparent" />
+      <div className="absolute inset-0 bg-[#1C1614]/20" />
 
-      {/* Content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-          >
-            {slide.subtitle && (
-              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-[0.25em] text-white/60 mb-3 sm:mb-4 font-sans">
-                {slide.subtitle}
-              </p>
-            )}
-            <h1 className="font-serif-heading text-3xl sm:text-5xl lg:text-6xl font-normal text-white tracking-wide leading-tight">
-              {slide.title}
-            </h1>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate({ type: 'shop' })}
-              className="mt-6 sm:mt-8 bg-white text-warm-text px-8 sm:px-10 py-3.5 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-camel hover:text-white transition-all duration-500 font-sans"
-            >
-              {slide.cta}
-            </motion.button>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Arrows */}
-      <div className="absolute bottom-1/2 left-4 sm:left-8 -translate-y-1/2 z-10">
-        <button
-          onClick={goPrev}
-          className="w-10 h-10 flex items-center justify-center border border-white/20 hover:border-white/60 hover:bg-white/10 text-white/70 hover:text-white transition-all duration-300"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft size={18} strokeWidth={1.5} />
-        </button>
-      </div>
-      <div className="absolute bottom-1/2 right-4 sm:right-8 -translate-y-1/2 z-10">
-        <button
-          onClick={goNext}
-          className="w-10 h-10 flex items-center justify-center border border-white/20 hover:border-white/60 hover:bg-white/10 text-white/70 hover:text-white transition-all duration-300"
-          aria-label="Next slide"
-        >
-          <ChevronRight size={18} strokeWidth={1.5} />
-        </button>
-      </div>
-
-      {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
+      {/* Animated Side Lines */}
+      <div className="absolute left-8 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => goTo(i)}
-            className={`transition-all duration-500 ${
-              i === current
-                ? 'w-6 h-[2px] bg-white'
-                : 'w-[2px] h-[2px] bg-white/40 hover:bg-white/70'
-            }`}
-            aria-label={`Go to slide ${i + 1}`}
-          />
+            className="group flex items-center gap-2"
+          >
+            <span className={`w-8 h-[1px] transition-all duration-500 ${i === current ? 'bg-[#C9A97A] w-12' : 'bg-white/30 group-hover:bg-white/60'}`} />
+            <span className={`text-[9px] uppercase tracking-[0.2em] transition-colors ${i === current ? 'text-[#C9A97A]' : 'text-white/40'}`}>
+              0{i + 1}
+            </span>
+          </button>
         ))}
       </div>
+
+      {/* Content - Left Aligned */}
+      <div className="absolute inset-0 flex items-center">
+        <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-20 w-full">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 30 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="max-w-xl"
+            >
+              {/* Overline */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+                className="overflow-hidden mb-4"
+              >
+                <span className="inline-block text-[#C9A97A] text-[10px] font-medium uppercase tracking-[0.35em] border-b border-[#C9A97A] pb-2">
+                  {slide.overline}
+                </span>
+              </motion.div>
+
+              {/* Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.8 }}
+                className="font-serif-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-normal text-white leading-[1.1] tracking-[0.02em]"
+              >
+                {slide.title}
+              </motion.h1>
+
+              {/* Subtitle */}
+              <motion.p
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45, duration: 0.6 }}
+                className="mt-6 text-white/70 text-sm sm:text-base font-light leading-relaxed max-w-md"
+              >
+                {slide.subtitle}
+              </motion.p>
+
+              {/* CTA Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+              >
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate({ type: slide.link as any })}
+                  className="group mt-8 sm:mt-10 relative overflow-hidden bg-[#C9A97A] text-[#1C1614] px-10 py-4"
+                >
+                  <span className="relative z-10 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.18em] flex items-center gap-3">
+                    {slide.cta}
+                    <ArrowRight size={14} strokeWidth={1.5} className="transition-transform group-hover:translate-x-1" />
+                  </span>
+                  <div className="absolute inset-0 bg-[#1C1614] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out" />
+                  <span className="absolute inset-0 z-10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {slide.cta}
+                  </span>
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Arrows */}
+      <div className="absolute bottom-8 left-auto right-8 flex items-center gap-3 z-10">
+        <button
+          onClick={goPrev}
+          className="w-12 h-12 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] hover:bg-[#C9A97A]/10 text-white/60 hover:text-[#C9A97A] transition-all duration-300"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft size={16} strokeWidth={1.5} />
+        </button>
+        <button
+          onClick={goNext}
+          className="w-12 h-12 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] hover:bg-[#C9A97A]/10 text-white/60 hover:text-[#C9A97A] transition-all duration-300"
+          aria-label="Next slide"
+        >
+          <ChevronRight size={16} strokeWidth={1.5} />
+        </button>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/10">
+        <motion.div
+          className="h-full bg-[#C9A97A]"
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.1 }}
+        />
+      </div>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      >
+        <span className="text-[8px] uppercase tracking-[0.2em] text-white/40">Scroll</span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="w-[1px] h-8 bg-gradient-to-b from-[#C9A97A] to-transparent"
+        />
+      </motion.div>
     </section>
   );
 }
@@ -272,38 +354,73 @@ function CollectionsSection({ title, collections: collectionData }: { title: str
   const featured = (collectionData || collections).filter(c => c.featured);
 
   return (
-    <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
-      <SectionHeader title={title} subtitle="Curated Collections" />
+    <section className="py-16 sm:py-20 lg:py-24 px-0 max-w-[1600px] mx-auto">
+      {/* Bigger Circular Collection Cards - Horizontal Scroll */}
       <div
         ref={scrollRef}
-        className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-2"
+        className="flex gap-4 sm:gap-6 lg:gap-10 overflow-x-auto no-scrollbar pb-6 px-4 sm:px-6"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {featured.map((collection, i) => (
           <motion.button
             key={collection.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
             onClick={() => navigate({ type: 'shop', category: collection.slug })}
-            className="flex-shrink-0 w-[160px] sm:w-[200px] lg:w-[220px] group"
+            className="flex-shrink-0 group flex flex-col items-center"
           >
-            <div className="aspect-[3/4] bg-secondary overflow-hidden mb-3 relative">
-              <Image
-                src={collection.image}
-                alt={collection.name}
-                fill
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                sizes="220px"
-              />
+            {/* Circle Image - Much Bigger */}
+            <div className="relative w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] lg:w-[280px] lg:h-[280px]">
+              {/* Outer Ring - Gold on hover */}
+              <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-[#C9A97A] transition-all duration-500" />
+              
+              {/* Image Container */}
+              <div className="absolute inset-[4px] rounded-full overflow-hidden bg-[#F5F2EE]">
+                <Image
+                  src={collection.image}
+                  alt={collection.name}
+                  fill
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-115"
+                  sizes="280px"
+                  priority={i < 3}
+                />
+                {/* Hover Overlay with Name */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1614]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+                  <span className="text-white text-xs font-medium uppercase tracking-[0.15em]">
+                    Shop Now
+                  </span>
+                </div>
+              </div>
             </div>
-            <h3 className="font-serif-heading text-sm sm:text-base font-medium text-warm-text group-hover:text-camel transition-colors duration-300">
+            {/* Collection Name */}
+            <span className="mt-4 text-[11px] font-medium uppercase tracking-[0.15em] text-[#1C1614] group-hover:text-[#C9A97A] transition-colors font-sans">
               {collection.name}
-            </h3>
-            <p className="text-[10px] text-muted-foreground font-light mt-1 font-sans">
-              {collection.productCount} pieces
-            </p>
+            </span>
           </motion.button>
         ))}
+        
+        {/* View All Circle */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: featured.length * 0.1, ease: [0.22, 1, 0.36, 1] }}
+          onClick={() => navigate({ type: 'shop' })}
+          className="flex-shrink-0 group flex flex-col items-center"
+        >
+          <div className="relative w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] lg:w-[280px] lg:h-[280px]">
+            <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#E8E4DF] group-hover:border-[#C9A97A] transition-all duration-500" />
+            <div className="absolute inset-[4px] rounded-full bg-[#F5F2EE] flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-[#C9A97A]/10 flex items-center justify-center mb-3 group-hover:bg-[#C9A97A]/20 transition-colors">
+                <ArrowRight size={24} strokeWidth={1.5} className="text-[#C9A97A] rotate-90 lg:rotate-0" />
+              </div>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-[#1C1614]">
+                View All
+              </span>
+            </div>
+          </div>
+        </motion.button>
       </div>
     </section>
   );
@@ -479,7 +596,7 @@ function NewsletterSection({ title, subtitle }: { title: string; subtitle?: stri
             animate={{ opacity: 1, y: 0 }}
             className="font-serif-heading text-lg text-warm-text"
           >
-            Welcome to the HAYA family.
+            Welcome to the DANEYA family.
           </motion.p>
         ) : (
           <form onSubmit={handleSubmit} className="flex items-center border border-warm-border overflow-hidden">

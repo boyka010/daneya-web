@@ -75,7 +75,7 @@ export default function AdminSidebar() {
             </div>
             {!collapsed && (
               <div>
-                <h1 className="text-white text-lg font-black tracking-wider leading-none">HAYA</h1>
+                <h1 className="text-white text-lg font-black tracking-wider leading-none">DANEYA</h1>
                 <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-widest">Admin</p>
               </div>
             )}

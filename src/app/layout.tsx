@@ -18,11 +18,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Rose Antiqua — Timeless Feminine Luxury",
+  title: "Daneya — Timeless Feminine Luxury",
   description:
     "Discover elegant abayas, flowing capes, and sophisticated sets crafted for the modern woman. Timeless luxury meets modest fashion.",
   keywords: [
-    "Rose Antiqua",
+    "Daneya",
     "modest fashion",
     "abayas",
     "luxury hijab",
@@ -35,11 +35,11 @@ export const metadata: Metadata = {
     icon: "/images/logo.png",
   },
   openGraph: {
-    title: "Rose Antiqua — Timeless Feminine Luxury",
+    title: "Daneya — Timeless Feminine Luxury",
     description: "Discover elegant abayas, flowing capes, and sophisticated sets crafted for the modern woman.",
     type: "website",
     locale: "en_US",
-    siteName: "Rose Antiqua",
+    siteName: "Daneya",
   },
 };
 

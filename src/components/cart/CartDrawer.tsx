@@ -131,7 +131,15 @@ export default function CartDrawer() {
                   View Bag
                 </button>
                 <button
-                  onClick={() => { setOpen(false); navigate({ type: 'checkout' }); }}
+                  onClick={() => { 
+                    setOpen(false); 
+                    const checkoutUrl = useStore.getState().cart?.checkoutUrl;
+                    if (checkoutUrl) {
+                      window.location.href = checkoutUrl;
+                    } else {
+                      navigate({ type: 'checkout' });
+                    }
+                  }}
                   className="w-full mt-2 py-3.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#FAF7F4] bg-[#1C1614] hover:bg-[#8B6F47] transition-colors duration-300 font-sans"
                 >
                   Checkout

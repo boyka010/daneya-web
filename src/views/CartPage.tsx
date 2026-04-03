@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { navigate } from '@/lib/router';
 import CartItem from '@/components/cart/CartItem';
 
@@ -150,8 +151,15 @@ export default function CartPage() {
 
               <motion.button
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate({ type: 'checkout' })}
-                className="w-full py-4 bg-warm-text text-warm-bg text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-camel transition-colors duration-300 font-sans"
+                onClick={() => {
+                  const checkoutUrl = useStore.getState().cart?.checkoutUrl;
+                  if (checkoutUrl) {
+                    window.location.href = checkoutUrl;
+                  } else {
+                    navigate({ type: 'checkout' });
+                  }
+                }}
+                className="w-full py-4 bg-[#1C1614] text-[#FAF7F4] text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#8B6F47] transition-colors duration-300 font-sans"
               >
                 Proceed to Checkout
               </motion.button>

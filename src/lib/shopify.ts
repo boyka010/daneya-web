@@ -1,4 +1,4 @@
-const SHOPIFY_STOREFRONT_API_VERSION = '2024-04';
+const SHOPIFY_STOREFRONT_API_VERSION = '2024-01';
 
 export const SHOPIFY_CONFIG: ShopifyConfig = {
   storeDomain: process.env.SHOPIFY_STORE_DOMAIN || 'your-store.myshopify.com',

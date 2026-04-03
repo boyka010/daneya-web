@@ -12,8 +12,9 @@ export default function CartPage() {
   const getCartTotal = useStore((s) => s.getCartTotal);
   const clearCart = useStore((s) => s.clearCart);
   const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen);
-
-  const subtotal = getCartTotal();
+  const shopifyCart = useShopifyStore((s) => s.cart);
+  
+  const subtotal = shopifyCart?.subtotal || getCartTotal();
   const shipping = subtotal >= 2000 ? 0 : 80;
   const total = subtotal + shipping;
 
@@ -152,7 +153,7 @@ export default function CartPage() {
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
-                  const checkoutUrl = useStore.getState().cart?.checkoutUrl;
+                  const checkoutUrl = useShopifyStore.getState().cart?.checkoutUrl;
                   if (checkoutUrl) {
                     window.location.href = checkoutUrl;
                   } else {

@@ -133,7 +133,8 @@ export default function CartDrawer() {
                 <button
                   onClick={() => { 
                     setOpen(false); 
-                    const checkoutUrl = useStore.getState().cart?.checkoutUrl;
+                    const shopifyStore = require('@/store/shopifyStore').useStore;
+                    const checkoutUrl = shopifyStore.getState().cart?.checkoutUrl;
                     if (checkoutUrl) {
                       window.location.href = checkoutUrl;
                     } else {

@@ -5,12 +5,14 @@ import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Heart, ShoppingBag, Minus, Plus, Star, ChevronRight, Truck, RotateCcw, Shield, Check, ArrowUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { navigate } from '@/lib/router';
 import { products as localProducts, getProductById } from '@/data/products';
 import { cn } from '@/lib/utils';
 import ProductCard from '@/components/product/ProductCard';
 import { Button } from '@/components/ui/button';
 import { getShopifyProducts } from '@/lib/shopify-queries';
+import { useShopifyCart } from '@/hooks/useShopifyCart';
 import type { Product } from '@/data/products';
 
 interface ProductPageProps {
@@ -39,6 +41,8 @@ export default function ProductPage({ productId }: ProductPageProps) {
   const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  const { addItem } = useShopifyCart();
+  
   useEffect(() => {
     async function loadProducts() {
       try {
@@ -61,10 +65,8 @@ export default function ProductPage({ productId }: ProductPageProps) {
     return shopifyProducts.find(p => p.id === productId);
   }, [productId, shopifyProducts]);
   
-  const addToCart = useStore((s) => s.addToCart);
   const isInWishlist = useStore((s) => product ? s.isInWishlist(product.id) : false);
   const toggleWishlist = useStore((s) => s.toggleWishlist);
-  const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState<string>('');
@@ -114,14 +116,11 @@ export default function ProductPage({ productId }: ProductPageProps) {
   const handleAddToBag = async () => {
     if (!product) return;
     setIsAddingToCart(true);
+    console.log('Adding to cart:', product.name, 'ID:', product.id, 'Shopify ID:', product.shopifyId);
     
-    // Optimistic UI update
-    addToCart(product, quantity, selectedColor);
+    // Use Shopify cart
+    addItem(product, quantity, selectedColor || product.colors[0]?.name || '');
     
-    // Simulate network delay for demo (in real app, this would be the Server Action)
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    setCartDrawerOpen(true);
     setIsAddingToCart(false);
   };
 

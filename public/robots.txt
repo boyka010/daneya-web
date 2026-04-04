@@ -12,3 +12,11 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+
+# Sitemap
+Sitemap: https://daneya.com/sitemap.xml

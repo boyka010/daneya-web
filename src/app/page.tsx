@@ -13,6 +13,11 @@ import CheckoutPage from '@/views/CheckoutPage';
 import WishlistPage from '@/views/WishlistPage';
 import AboutPage from '@/views/AboutPage';
 import AdminPage from '@/views/AdminPage';
+import ShippingPage from '@/views/ShippingPage';
+import ReturnsPage from '@/views/ReturnsPage';
+import SizeGuidePage from '@/views/SizeGuidePage';
+import FAQPage from '@/views/FAQPage';
+import ContactPage from '@/views/ContactPage';
 
 function PageRenderer() {
   const currentPage = useStore((s) => s.currentPage);
@@ -27,6 +32,11 @@ function PageRenderer() {
       case 'checkout': return <CheckoutPage />;
       case 'wishlist': return <WishlistPage />;
       case 'about': return <AboutPage />;
+      case 'shipping': return <ShippingPage />;
+      case 'returns': return <ReturnsPage />;
+      case 'size-guide': return <SizeGuidePage />;
+      case 'faq': return <FAQPage />;
+      case 'contact': return <ContactPage />;
       case 'admin': return <AdminPage />;
       default: return <HomePage />;
     }

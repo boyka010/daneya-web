@@ -6,6 +6,11 @@ export type PageRoute =
   | { type: "checkout" }
   | { type: "wishlist" }
   | { type: "about" }
+  | { type: "shipping" }
+  | { type: "returns" }
+  | { type: "size-guide" }
+  | { type: "faq" }
+  | { type: "contact" }
   | { type: "admin"; section?: string };
 
 export function parseHash(hash: string): PageRoute {
@@ -23,6 +28,11 @@ export function parseHash(hash: string): PageRoute {
   if (path.startsWith("/checkout")) return { type: "checkout" };
   if (path === "/wishlist") return { type: "wishlist" };
   if (path === "/about") return { type: "about" };
+  if (path === "/shipping") return { type: "shipping" };
+  if (path === "/returns") return { type: "returns" };
+  if (path === "/size-guide") return { type: "size-guide" };
+  if (path === "/faq") return { type: "faq" };
+  if (path === "/contact") return { type: "contact" };
   if (path.startsWith("/admin")) {
     const section = path.split("/")[2] || undefined;
     return { type: "admin", section };
@@ -54,6 +64,21 @@ export function navigate(page: PageRoute) {
       break;
     case "about":
       hash = "#/about";
+      break;
+    case "shipping":
+      hash = "#/shipping";
+      break;
+    case "returns":
+      hash = "#/returns";
+      break;
+    case "size-guide":
+      hash = "#/size-guide";
+      break;
+    case "faq":
+      hash = "#/faq";
+      break;
+    case "contact":
+      hash = "#/contact";
       break;
     case "admin":
       hash = page.section ? `#/admin/${page.section}` : "#/admin/dashboard";

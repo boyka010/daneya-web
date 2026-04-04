@@ -13,6 +13,9 @@ import ProductCard from '@/components/product/ProductCard';
 import type { HomeSection } from '@/store/useStore';
 import { getShopifyProducts } from '@/lib/shopify-queries';
 import type { Product } from '@/data/products';
+import BrandManifesto from '@/components/home/BrandManifesto';
+import EnhancedTestimonials from '@/components/home/EnhancedTestimonials';
+import InstagramFeed from '@/components/home/InstagramFeed';
 
 /* ─── Section Header Component ─── */
 function SectionHeader({ title, subtitle, actionLabel, onAction }: {
@@ -692,6 +695,8 @@ export default function HomePage() {
       {homeSections
         .filter((section) => section.enabled)
         .map((section) => renderSection(section))}
+      <BrandManifesto />
+      <InstagramFeed />
       <TrustBadges />
     </div>
   );

@@ -82,18 +82,22 @@ export function useShopifyCart() {
   const [isPending, startTransition] = useTransition();
 
   const addItem = useCallback(async (product: Product, quantity: number, color: string, variantId?: string) => {
+    console.log('useShopifyCart addItem called:', { product, quantity, color, variantId });
     // Optimistic update
     addToCartLocal(product, quantity, color);
     setCartDrawerOpen(true);
 
     startTransition(async () => {
+      console.log('Calling addToCartAction...');
       const result = await addToCartAction(cartId, variantId || '', quantity);
+      console.log('addToCartAction result:', result);
       if (result.success && result.cart) {
         if (!cartId && result.cart.id) {
           setCartId(result.cart.id);
         }
         // Optionally sync cart from Shopify
         if (result.cart) {
+          console.log('Setting cart with checkoutUrl:', result.cart.checkoutUrl);
           // Transform Shopify cart to local format
           setCart({
             id: result.cart.id,

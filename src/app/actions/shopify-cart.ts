@@ -44,17 +44,21 @@ export async function createCartAction(variantId: string, quantity: number = 1) 
 }
 
 export async function addToCartAction(cartId: string | null, variantId: string, quantity: number = 1) {
+  console.log('addToCartAction called with:', { cartId, variantId, quantity });
   try {
     // Check if Shopify is configured
     if (!SHOPIFY_CONFIG.accessToken || SHOPIFY_CONFIG.accessToken === '') {
+      console.log('Shopify not configured - no access token');
       return { success: false, error: 'Shopify not configured', cart: null }
     }
 
     let cart;
     
-    if (!cartId) {
+    if (!cartId || !variantId) {
+      console.log('Creating new cart, variantId:', variantId);
       // Create new cart if none exists
-      cart = await createCart(variantId, quantity)
+      cart = await createCart(variantId || 'gid://shopify/ProductVariant/1', quantity);
+      console.log('Created cart:', cart);
       if (cart?.id) {
         await setCartIdCookie(cart.id)
       }
@@ -63,6 +67,8 @@ export async function addToCartAction(cartId: string | null, variantId: string, 
       cart = await addToCart(cartId, variantId, quantity)
     }
     
+    console.log('Cart result:', cart);
+    console.log('Checkout URL:', cart?.checkoutUrl);
     revalidatePath('/')
     return { success: true, cart }
   } catch (error) {

@@ -16,6 +16,7 @@ import type { Product } from '@/data/products';
 import BrandManifesto from '@/components/home/BrandManifesto';
 import EnhancedTestimonials from '@/components/home/EnhancedTestimonials';
 import InstagramFeed from '@/components/home/InstagramFeed';
+import ProductSlider from '@/components/home/ProductSlider';
 
 /* ─── Section Header Component ─── */
 function SectionHeader({ title, subtitle, actionLabel, onAction }: {
@@ -659,24 +660,24 @@ export default function HomePage() {
         return <CollectionsSection key={section.id} title={section.title} collections={storeCollections} />;
       case 'featured_products':
         return (
-          <ProductGridSection
+          <ProductSlider
+            key={section.id}
+            title={section.title}
+            subtitle={section.subtitle}
+            items={products.slice(0, 12)}
+            actionLabel="View All"
+            count={(section.config.count as number) || 12}
+          />
+        );
+      case 'new_arrivals':
+        return (
+          <ProductSlider
             key={section.id}
             title={section.title}
             subtitle={section.subtitle}
             items={products.slice(0, 8)}
             actionLabel="View All"
             count={(section.config.count as number) || 8}
-          />
-        );
-      case 'new_arrivals':
-        return (
-          <ProductGridSection
-            key={section.id}
-            title={section.title}
-            subtitle={section.subtitle}
-            items={products.slice(0, 4)}
-            actionLabel="View All"
-            count={(section.config.count as number) || 4}
           />
         );
       case 'banner':

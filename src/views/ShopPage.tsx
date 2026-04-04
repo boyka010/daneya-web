@@ -59,7 +59,9 @@ export default function ShopPage() {
   useEffect(() => {
     async function loadShopifyProducts() {
       try {
+        console.log('Fetching Shopify products...');
         const products = await getShopifyProducts();
+        console.log('Shopify products response:', products);
         setShopifyProducts(products);
       } catch (error) {
         console.error('Failed to load Shopify products:', error);
@@ -72,6 +74,7 @@ export default function ShopPage() {
 
   // Use Shopify products if available, otherwise fallback to local
   const products = shopifyProducts.length > 0 ? shopifyProducts : localProducts;
+  console.log('Using products, shopify count:', shopifyProducts.length, 'local count:', localProducts.length);
 
   // Force re-render when category changes
   const categoryKey = `${activeCategory}-${sortBy}-${priceRange[0]}-${priceRange[1]}-${selectedColors.join(',')}`;

@@ -162,6 +162,9 @@ async function shopifyFetch<T>({
   config?: ShopifyConfig;
 }): Promise<T> {
   const { storeDomain, accessToken } = config;
+  
+  console.log('shopifyFetch - storeDomain:', storeDomain);
+  console.log('shopifyFetch - accessToken:', accessToken ? 'present' : 'MISSING');
 
   const url = `https://${storeDomain}/api/${SHOPIFY_STOREFRONT_API_VERSION}/graphql.json`;
 

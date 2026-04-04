@@ -581,6 +581,7 @@ export function transformShopifyProduct(product: ShopifyProduct) {
 }
 
 export async function createCart(variantId: string, quantity: number = 1) {
+  console.log('createCart called with:', { variantId, quantity });
   const query = `
     mutation CreateCart($input: CartInput!) {
       cartCreate(input: $input) {
@@ -657,6 +658,7 @@ export async function createCart(variantId: string, quantity: number = 1) {
     },
   };
 
+  console.log('Calling shopifyFetch for cartCreate...');
   const data = await shopifyFetch<{
     cartCreate: {
       cart: ShopifyCart;
@@ -664,10 +666,15 @@ export async function createCart(variantId: string, quantity: number = 1) {
     };
   }>({ query, variables });
 
+  console.log('cartCreate response:', data);
+  console.log('cartCreate userErrors:', data.cartCreate.userErrors);
+  
   if (data.cartCreate.userErrors.length > 0) {
+    console.error('Cart creation errors:', data.cartCreate.userErrors);
     throw new Error(data.cartCreate.userErrors[0].message);
   }
 
+  console.log('Created cart:', data.cartCreate.cart);
   return data.cartCreate.cart;
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Search, Heart, ShoppingBag, X, Menu, Instagram, Facebook, Globe, ChevronDown } from 'lucide-react';
 import { navigate } from '@/lib/router';
 import { useStore } from '@/store/useStore';
+import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { searchProducts } from '@/data/products';
@@ -72,9 +73,9 @@ export default function Navbar() {
   const setSearchOpen = useStore((s) => s.setSearchOpen);
   const isAnnouncementOpen = useStore((s) => s.isAnnouncementOpen);
   const setAnnouncementOpen = useStore((s) => s.setAnnouncementOpen);
-  const cartCount = useStore((s) => s.cartItems.reduce((c, i) => c + i.quantity, 0));
+  const cartCount = useShopifyStore((s) => s.getCartCount());
   const wishCount = useStore((s) => s.wishlistItems.length);
-  const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen);
+  const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   const currentPage = useStore((s) => s.currentPage);
   const isHomePage = currentPage.type === 'home';
 

@@ -3,12 +3,13 @@
 import { Home, Search, Heart, ShoppingBag, User } from 'lucide-react';
 import { navigate } from '@/lib/router';
 import { useStore } from '@/store/useStore';
+import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { motion } from 'framer-motion';
 
 export default function BottomNav() {
-  const cartCount = useStore((s) => s.cartItems.reduce((c, i) => c + i.quantity, 0));
+  const cartCount = useShopifyStore((s) => s.getCartCount());
   const wishCount = useStore((s) => s.wishlistItems.length);
-  const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen);
+  const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   const setSearchOpen = useStore((s) => s.setSearchOpen);
 
   const navItems = [

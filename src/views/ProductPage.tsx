@@ -6,10 +6,12 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { Heart, ShoppingBag, Minus, Plus, Star, ChevronRight, Truck, RotateCcw, Shield, Check, ArrowUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { navigate } from '@/lib/router';
-import { getProductById, products } from '@/data/products';
+import { products as localProducts, getProductById } from '@/data/products';
 import { cn } from '@/lib/utils';
 import ProductCard from '@/components/product/ProductCard';
 import { Button } from '@/components/ui/button';
+import { getShopifyProducts } from '@/lib/shopify-queries';
+import type { Product } from '@/data/products';
 
 interface ProductPageProps {
   productId: number;
@@ -34,7 +36,31 @@ function renderStars(rating: number, reviews: number) {
 }
 
 export default function ProductPage({ productId }: ProductPageProps) {
-  const product = useMemo(() => getProductById(productId), [productId]);
+  const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const products = await getShopifyProducts();
+        setShopifyProducts(products);
+      } catch (error) {
+        console.error('Failed to load products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
+
+  const product = useMemo(() => {
+    // First try local products
+    const local = getProductById(productId);
+    if (local) return local;
+    // Then try Shopify products
+    return shopifyProducts.find(p => p.id === productId);
+  }, [productId, shopifyProducts]);
+  
   const addToCart = useStore((s) => s.addToCart);
   const isInWishlist = useStore((s) => product ? s.isInWishlist(product.id) : false);
   const toggleWishlist = useStore((s) => s.toggleWishlist);
@@ -79,10 +105,11 @@ export default function ProductPage({ productId }: ProductPageProps) {
 
   const relatedProducts = useMemo(() => {
     if (!product) return [];
-    return products
+    const allProducts = shopifyProducts.length > 0 ? shopifyProducts : localProducts;
+    return allProducts
       .filter(p => p.category === product.category && p.id !== product.id)
       .slice(0, 4);
-  }, [product]);
+  }, [product, shopifyProducts]);
 
   const handleAddToBag = async () => {
     if (!product) return;
@@ -98,10 +125,20 @@ export default function ProductPage({ productId }: ProductPageProps) {
     setIsAddingToCart(false);
   };
 
-  if (!product) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+        <p className="text-[#6B6560]">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
         <p className="font-serif-heading text-xl text-[#1C1614]">Product not found</p>
+        <p className="text-sm text-[#6B6560]">ID: {productId}</p>
+        <button onClick={() => navigate({ type: 'shop' })} className="text-[#8B6F47]">Go to Shop</button>
       </div>
     );
   }

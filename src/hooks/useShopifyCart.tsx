@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useTransition } from 'react';
 import { addToCartAction, createCartAction } from '@/app/actions/shopify-cart';
 import { useStore } from '@/store/useStore';
+import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import type { Product } from '@/data/products';
 import { cn } from '@/lib/utils';
 
@@ -25,10 +26,10 @@ export function OptimisticCartButton({
   children,
 }: OptimisticCartButtonProps) {
   const [isPending, startTransition] = useTransition();
-  const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen);
-  const cartId = useStore((s) => s.cartId);
-  const setCartId = useStore((s) => s.setCartId);
-  const addToCartLocal = useStore((s) => s.addToCart);
+  const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
+  const cartId = useShopifyStore((s) => s.cartId);
+  const setCartId = useShopifyStore((s) => s.setCartId);
+  const addToCartLocal = useShopifyStore((s) => s.addToCart);
   
   // Optimistic update - immediately add to local store
   const handleAddToCart = useCallback(() => {
@@ -68,15 +69,15 @@ export function OptimisticCartButton({
 
 // Hook for managing cart with Shopify sync
 export function useShopifyCart() {
-  const cart = useStore((s) => s.cart);
-  const cartId = useStore((s) => s.cartId);
-  const setCart = useStore((s) => s.setCart);
-  const setCartId = useStore((s) => s.setCartId);
-  const addToCartLocal = useStore((s) => s.addToCart);
-  const updateCartItem = useStore((s) => s.updateCartItem);
-  const removeFromCart = useStore((s) => s.removeFromCart);
-  const clearCart = useStore((s) => s.clearCart);
-  const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen);
+  const cart = useShopifyStore((s) => s.cart);
+  const cartId = useShopifyStore((s) => s.cartId);
+  const setCart = useShopifyStore((s) => s.setCart);
+  const setCartId = useShopifyStore((s) => s.setCartId);
+  const addToCartLocal = useShopifyStore((s) => s.addToCart);
+  const updateCartItem = useShopifyStore((s) => s.updateCartItem);
+  const removeFromCart = useShopifyStore((s) => s.removeFromCart);
+  const clearCart = useShopifyStore((s) => s.clearCart);
+  const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   
   const [isPending, startTransition] = useTransition();
 

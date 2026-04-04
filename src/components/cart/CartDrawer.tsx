@@ -1,16 +1,24 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, ArrowRight } from 'lucide-react';
 import { navigate } from '@/lib/router';
 import { useStore } from '@/store/useStore';
+import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import CartItem from './CartItem';
 import { useShopifyCart } from '@/hooks/useShopifyCart';
 
 export default function CartDrawer() {
-  const isOpen = useStore((s) => s.isCartDrawerOpen);
-  const setOpen = useStore((s) => s.setCartDrawerOpen);
+  const isOpen = useShopifyStore((s) => s.isCartDrawerOpen);
+  const setOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   const { cart, addItem } = useShopifyCart();
+  
+  // Debug: log the cart state
+  useEffect(() => {
+    console.log('CartDrawer - cart:', cart);
+    console.log('CartDrawer - checkoutUrl:', cart?.checkoutUrl);
+  }, [cart]);
   
   // Get cart items from either source
   const cartItems = useStore((s) => s.cartItems);
@@ -19,6 +27,18 @@ export default function CartDrawer() {
   const total = cart?.subtotal || getCartTotal();
   const freeShippingThreshold = 2000;
   const itemCount = cart?.lines?.length || cartItems.length;
+  
+  const handleCheckout = () => {
+    console.log('Checkout clicked, cart:', cart);
+    console.log('Checkout URL:', cart?.checkoutUrl);
+    setOpen(false);
+    if (cart?.checkoutUrl) {
+      window.location.href = cart.checkoutUrl;
+    } else {
+      console.log('No checkout URL, falling back to internal checkout');
+      navigate({ type: 'checkout' });
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -131,16 +151,7 @@ export default function CartDrawer() {
                   View Bag
                 </button>
                 <button
-                  onClick={() => { 
-                    setOpen(false); 
-                    const shopifyStore = require('@/store/shopifyStore').useStore;
-                    const checkoutUrl = shopifyStore.getState().cart?.checkoutUrl;
-                    if (checkoutUrl) {
-                      window.location.href = checkoutUrl;
-                    } else {
-                      navigate({ type: 'checkout' });
-                    }
-                  }}
+                  onClick={handleCheckout}
                   className="w-full mt-2 py-3.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#FAF7F4] bg-[#1C1614] hover:bg-[#8B6F47] transition-colors duration-300 font-sans"
                 >
                   Checkout

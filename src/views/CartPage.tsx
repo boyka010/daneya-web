@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useStore } from '@/store/useStore';
@@ -14,11 +15,26 @@ export default function CartPage() {
   const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen);
   const shopifyCart = useShopifyStore((s) => s.cart);
   
+  // Debug
+  useEffect(() => {
+    console.log('CartPage - shopifyCart:', shopifyCart);
+    console.log('CartPage - checkoutUrl:', shopifyCart?.checkoutUrl);
+  }, [shopifyCart]);
+  
   const subtotal = shopifyCart?.subtotal || getCartTotal();
   const shipping = subtotal >= 2000 ? 0 : 80;
   const total = subtotal + shipping;
+  
+  const handleCheckout = () => {
+    console.log('CartPage checkout clicked, cart:', shopifyCart);
+    if (shopifyCart?.checkoutUrl) {
+      window.location.href = shopifyCart.checkoutUrl;
+    } else {
+      navigate({ type: 'checkout' });
+    }
+  };
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !shopifyCart?.lines?.length) {
     return (
       <div className="min-h-screen bg-[#FAF7F4] flex items-center justify-center px-4">
         <div className="text-center">
@@ -152,14 +168,7 @@ export default function CartPage() {
 
               <motion.button
                 whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  const checkoutUrl = useShopifyStore.getState().cart?.checkoutUrl;
-                  if (checkoutUrl) {
-                    window.location.href = checkoutUrl;
-                  } else {
-                    navigate({ type: 'checkout' });
-                  }
-                }}
+                onClick={handleCheckout}
                 className="w-full py-4 bg-[#1C1614] text-[#FAF7F4] text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#8B6F47] transition-colors duration-300 font-sans"
               >
                 Proceed to Checkout

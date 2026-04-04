@@ -12,11 +12,16 @@ export default function BottomNav() {
   const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   const setSearchOpen = useStore((s) => s.setSearchOpen);
 
+  const handleBagClick = () => {
+    console.log('Bag button clicked!');
+    setCartDrawerOpen(true);
+  };
+
   const navItems = [
     { icon: Home, label: 'Home', action: () => navigate({ type: 'home' }) },
     { icon: Search, label: 'Search', action: () => setSearchOpen(true) },
-    { icon: Heart, label: 'Wishlist', action: () => navigate({ type: 'wishlist' }), count: wishCount },
-    { icon: ShoppingBag, label: 'Bag', action: () => setCartDrawerOpen(true), count: cartCount },
+    { icon: Heart, label: 'Wishlist', action: () => navigate({ type: 'wishlist' }, true), count: wishCount },
+    { icon: ShoppingBag, label: 'Bag', action: handleBagClick, count: cartCount },
   ];
 
   return (

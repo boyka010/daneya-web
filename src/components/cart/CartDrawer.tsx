@@ -14,6 +14,11 @@ export default function CartDrawer() {
   const setOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   const { cart, addItem } = useShopifyCart();
   
+  // Debug: log state
+  useEffect(() => {
+    console.log('CartDrawer isOpen:', isOpen);
+  }, [isOpen]);
+  
   // Debug: log the cart state
   useEffect(() => {
     console.log('CartDrawer - cart:', cart);

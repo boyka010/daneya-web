@@ -9,7 +9,7 @@ export default function ReturnsPage() {
     <>
       <SEO 
         title="Returns & Exchanges | DANEYA Egypt"
-        description="Easy 30-day returns and exchanges. Read our policy for eligible items, conditions, and how to initiate a return."
+        description="Easy 7-day returns and exchanges. Read our policy for eligible items, conditions, and how to initiate a return."
       />
       <div className="min-h-screen bg-[#FAF7F4] pt-20 pb-16">
         <div className="max-w-[800px] mx-auto px-4 sm:px-6">
@@ -36,10 +36,10 @@ export default function ReturnsPage() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <RotateCcw className="text-[#C4748C]" size={24} />
-                <h2 className="text-lg font-serif text-[#1C1614]">30-Day Return Policy</h2>
+                <h2 className="text-lg font-serif text-[#1C1614]">7-Day Return Policy</h2>
               </div>
               <ul className="space-y-2 text-sm text-[#6B6560]">
-                <li>• Returns accepted within 30 days of delivery</li>
+                <li>• Returns accepted within 7 days of delivery</li>
                 <li>• Items must be unworn, unwashed, and with tags attached</li>
                 <li>• Original packaging must be included</li>
                 <li>• Custom/modified items are final sale</li>

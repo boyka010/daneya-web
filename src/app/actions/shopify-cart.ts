@@ -58,7 +58,7 @@ export async function addToCartAction(cartId: string | null, variantId: string, 
       console.log('Creating new cart, variantId:', variantId);
       // Create new cart if none exists
       cart = await createCart(variantId || 'gid://shopify/ProductVariant/1', quantity);
-      console.log('Created cart:', cart);
+      console.log('Created cart object:', JSON.stringify(cart));
       if (cart?.id) {
         await setCartIdCookie(cart.id)
       }
@@ -67,8 +67,16 @@ export async function addToCartAction(cartId: string | null, variantId: string, 
       cart = await addToCart(cartId, variantId, quantity)
     }
     
-    console.log('Cart result:', cart);
+    console.log('Cart result:', JSON.stringify(cart));
     console.log('Checkout URL:', cart?.checkoutUrl);
+    
+    // If checkoutUrl is missing, create one manually
+    if (cart && !cart.checkoutUrl && cart.id) {
+      const checkoutUrl = `https://${SHOPIFY_CONFIG.storeDomain}/cart/${cart.id.replace('gid://shopify/Cart/', '')}/checkout`;
+      console.log('Generated fallback checkoutUrl:', checkoutUrl);
+      cart.checkoutUrl = checkoutUrl;
+    }
+    
     revalidatePath('/')
     return { success: true, cart }
   } catch (error) {

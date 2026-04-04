@@ -169,7 +169,7 @@ export default function CartPage() {
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={handleCheckout}
-                className="w-full py-4 bg-[#1C1614] text-[#FAF7F4] text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#8B6F47] transition-colors duration-300 font-sans"
+                className="w-full py-4 bg-[#1C1614] text-[#FAF7F4] text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#C9A97A] transition-colors duration-300 font-sans"
               >
                 Proceed to Checkout
               </motion.button>

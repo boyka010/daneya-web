@@ -1,27 +1,32 @@
 'use client';
 
-import { Home, Search, Heart, ShoppingBag, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Home, Search, Heart, ShoppingBag } from 'lucide-react';
 import { navigate } from '@/lib/router';
 import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { motion } from 'framer-motion';
 
 export default function BottomNav() {
+  const [mounted, setMounted] = useState(false);
   const cartCount = useShopifyStore((s) => s.getCartCount());
   const wishCount = useStore((s) => s.wishlistItems.length);
   const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   const setSearchOpen = useStore((s) => s.setSearchOpen);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleBagClick = () => {
-    console.log('Bag button clicked!');
     setCartDrawerOpen(true);
   };
 
   const navItems = [
     { icon: Home, label: 'Home', action: () => navigate({ type: 'home' }) },
     { icon: Search, label: 'Search', action: () => setSearchOpen(true) },
-    { icon: Heart, label: 'Wishlist', action: () => navigate({ type: 'wishlist' }, true), count: wishCount },
-    { icon: ShoppingBag, label: 'Bag', action: handleBagClick, count: cartCount },
+    { icon: Heart, label: 'Wishlist', action: () => navigate({ type: 'wishlist' }, true), count: mounted ? wishCount : 0 },
+    { icon: ShoppingBag, label: 'Bag', action: handleBagClick, count: mounted ? cartCount : 0 },
   ];
 
   return (
@@ -44,7 +49,7 @@ export default function BottomNav() {
               {item.label}
             </span>
             {item.count !== undefined && item.count > 0 && (
-              <span className="absolute -top-0.5 right-6 w-4 h-4 flex items-center justify-center text-[8px] bg-[#C4748C] text-white font-medium rounded-full">
+              <span suppressHydrationWarning className="absolute -top-0.5 right-6 w-4 h-4 flex items-center justify-center text-[8px] bg-[#C4748C] text-white font-medium rounded-full">
                 {item.count}
               </span>
             )}

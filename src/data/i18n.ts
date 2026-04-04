@@ -30,7 +30,7 @@ const en: Translations = {
   'home.new.title': 'New Arrivals',
   'home.new.subtitle': 'Fresh drops you need to see',
   'home.testimonials.title': 'What Our Customers Say',
-  'home.newsletter.title': 'Join the HAYA Family',
+  'home.newsletter.title': 'Join the DANEYA Family',
   'home.newsletter.subtitle': 'Get 15% off your first order + early access to new drops',
   'home.newsletter.placeholder': 'Enter your email',
   'home.newsletter.button': 'Subscribe',
@@ -60,7 +60,7 @@ const en: Translations = {
   'product.shipping': 'Shipping',
   'product.returns': 'Returns',
   'product.free_shipping': 'Free Shipping on Orders Over $75',
-  'product.returns_30': '30-Day Returns',
+  'product.returns_30': '7-Day Returns',
   'product.secure': 'Secure Checkout',
 
   // Cart
@@ -123,7 +123,7 @@ const en: Translations = {
   'footer.support': 'Support',
   'footer.company': 'Company',
   'footer.connect': 'Connect',
-  'footer.rights': '© 2025 HAYA. All rights reserved.',
+  'footer.rights': '© 2025 DANEYA. All rights reserved.',
 };
 
 const ar: Translations = {

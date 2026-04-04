@@ -29,13 +29,13 @@ function getBadgeClass(badge: string): string {
 
 function renderStars(rating: number) {
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
-          size={10}
-          strokeWidth={1.5}
-          className={star <= Math.round(rating) ? 'star-filled fill-camel' : 'star-empty'}
+          size={11}
+          strokeWidth={1}
+          className={star <= Math.round(rating) ? 'star-filled' : 'star-empty'}
         />
       ))}
     </div>
@@ -68,7 +68,8 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
   const handleAddToCart = useCallback((e: React.MouseEvent, size?: string) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product, 1, hoveredColor || product.colors[0]?.name || '', undefined);
+    const variantId = product.variants?.[0]?.id || undefined;
+    addItem(product, 1, hoveredColor || product.colors[0]?.name || '', variantId);
   }, [product, hoveredColor, addItem]);
 
   const handleToggleWishlist = useCallback((e: React.MouseEvent) => {
@@ -96,7 +97,7 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
     >
       {/* Image Container - CLICK TO NAVIGATE */}
       <div
-        className="relative aspect-[3/4] bg-[#F5F2EE] mb-3.5 overflow-hidden cursor-pointer"
+        className="relative aspect-[3/4] bg-[#FAF7F4] mb-4 overflow-hidden cursor-pointer"
         onClick={handleNavigate}
         role="link"
         aria-label={`View ${product.name} details`}
@@ -185,7 +186,7 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
                 <button
                   onClick={(e) => handleAddToCart(e)}
                   disabled={isPending}
-                  className="flex items-center gap-2 bg-[#1C1614] text-white px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#8B6F47] transition-all duration-300 font-sans disabled:opacity-50"
+                  className="flex items-center gap-2 bg-[#1C1614] text-white px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#C9A97A] transition-all duration-300 font-sans disabled:opacity-50"
                 >
                   <ShoppingBag size={13} strokeWidth={1.5} />
                   {isPending ? 'Adding...' : 'Add to Bag'}
@@ -210,7 +211,7 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
                 {product.sizes.slice(0, 5).map((size) => (
                   <button
                     key={size}
-                    onClick={(e) => handleAddToBag(e, size)}
+                    onClick={(e) => handleAddToCart(e, size)}
                     className="min-w-[32px] h-7 text-[10px] font-medium text-[#1C1614] hover:bg-[#1C1614] hover:text-white border border-[#E8E4DF] transition-all duration-200 font-sans"
                   >
                     {size}
@@ -230,13 +231,13 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
         className="cursor-pointer"
         onClick={handleNavigate}
       >
-        <h3 className="font-serif-heading text-[0.9375rem] font-medium text-[#1C1614] leading-snug truncate hover:text-[#8B6F47] transition-colors">
+        <h3 className="font-serif-heading text-[0.9375rem] font-normal text-[#1C1614] leading-snug truncate hover:text-[#C9A97A] transition-colors">
           {product.name}
         </h3>
 
         {/* Color swatches */}
         {product.colors.length > 1 && (
-          <div className="flex items-center gap-1.5 mt-2">
+          <div className="flex items-center gap-2 mt-3">
             {product.colors.slice(0, 5).map((color) => (
               <button
                 key={color.name}
@@ -244,48 +245,43 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
                 onMouseLeave={() => setHoveredColor(null)}
                 onClick={(e) => e.preventDefault()}
                 className={cn(
-                  'w-3 h-3 rounded-full border border-[#E8E4DF] inline-block transition-all',
-                  hoveredColor === color.name && 'ring-2 ring-[#8B6F47] ring-offset-1'
+                  'w-3.5 h-3.5 rounded-full border border-[#E8E4DF] inline-block transition-all',
+                  hoveredColor === color.name && 'ring-2 ring-[#C9A97A] ring-offset-1'
                 )}
                 style={{ backgroundColor: color.hex }}
                 title={color.name}
               />
             ))}
             {product.colors.length > 5 && (
-              <span className="text-[9px] text-[#6B6560] ml-0.5">+{product.colors.length - 5}</span>
+              <span className="text-[9px] text-[#6B6560] ml-1">+{product.colors.length - 5}</span>
             )}
           </div>
         )}
 
         {/* Rating */}
-        <div className="flex items-center gap-2 mt-1.5">
+        <div className="flex items-center gap-2 mt-3">
           {renderStars(product.rating)}
-          <span className="text-[10px] text-[#6B6560] font-light">({product.reviews})</span>
+          <span className="text-xs text-[#6B6560] font-light">({product.reviews})</span>
         </div>
 
         {/* Price */}
-        <div className="flex items-center gap-2 mt-1.5">
-          <p className="text-sm font-medium text-[#1C1614] font-sans">
+        <div className="flex items-center gap-3 mt-3">
+          <p className="text-base font-normal text-[#1C1614] font-sans">
             EGP {product.price.toLocaleString('en-US')}
           </p>
           {product.originalPrice && (
-            <p className="text-xs text-[#6B6560] line-through font-light">
+            <p className="text-sm text-[#6B6560] line-through font-light">
               EGP {product.originalPrice.toLocaleString('en-US')}
             </p>
-          )}
-          {product.originalPrice && (
-            <span className="text-[9px] font-medium uppercase tracking-wider text-sale font-sans">
-              Save {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-            </span>
           )}
         </div>
       </div>
 
       {/* Mobile Add to Bag Button */}
       <button
-        onClick={(e) => handleAddToBag(e)}
+        onClick={(e) => handleAddToCart(e)}
         disabled={isOutOfStock || isPending}
-        className="mt-3 w-full py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#1C1614] border border-[#E8E4DF] hover:bg-[#1C1614] hover:text-white hover:border-[#1C1614] transition-all duration-300 lg:hidden font-sans disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 w-full py-3 text-xs uppercase tracking-[0.15em] text-[#1C1614] border border-[#E8E4DF] hover:bg-[#1C1614] hover:text-white hover:border-[#1C1614] transition-all duration-300 lg:hidden font-sans disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isOutOfStock ? 'Sold Out' : isPending ? 'Adding...' : 'Add to Bag'}
       </button>

@@ -141,7 +141,7 @@ export default function ProductQuickView() {
                       className={cn(
                         'w-6 h-6 rounded-full transition-all duration-200',
                         effectiveColor === color.name
-                          ? 'ring-2 ring-[#8B6F47] ring-offset-2'
+                          ? 'ring-2 ring-[#C9A97A] ring-offset-2'
                           : 'ring-1 ring-[#E8E4DF] hover:ring-[#6B6560]'
                       )}
                       style={{ backgroundColor: color.hex }}
@@ -183,14 +183,14 @@ export default function ProductQuickView() {
               <div className="inline-flex items-center border border-[#E8E4DF]">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-8 h-8 flex items-center justify-center text-[#1C1614] hover:text-[#8B6F47] transition-colors"
+                  className="w-8 h-8 flex items-center justify-center text-[#1C1614] hover:text-[#C9A97A] transition-colors"
                 >
                   <Minus size={12} strokeWidth={1.5} />
                 </button>
                 <span className="w-8 text-center text-xs font-medium text-[#1C1614] font-sans">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-8 h-8 flex items-center justify-center text-[#1C1614] hover:text-[#8B6F47] transition-colors"
+                  className="w-8 h-8 flex items-center justify-center text-[#1C1614] hover:text-[#C9A97A] transition-colors"
                 >
                   <Plus size={12} strokeWidth={1.5} />
                 </button>
@@ -201,7 +201,7 @@ export default function ProductQuickView() {
             <div className="max-lg:fixed max-lg:bottom-0 max-lg:left-0 max-lg:right-0 max-lg:bg-white max-lg:border-t max-lg:border-[#E8E4DF] max-lg:p-4 max-lg:flex max-lg:flex-col max-lg:gap-2">
               <button
                 onClick={handleAddToBag}
-                className="w-full bg-[#1C1614] text-white py-3.5 text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#8B6F47] transition-colors duration-300 flex items-center justify-center gap-2 font-sans"
+                className="w-full bg-[#1C1614] text-white py-3.5 text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#C9A97A] transition-colors duration-300 flex items-center justify-center gap-2 font-sans"
               >
                 <ShoppingBag size={14} strokeWidth={1.5} />
                 Add to Bag
@@ -218,7 +218,7 @@ export default function ProductQuickView() {
             {/* Full details link */}
             <button
               onClick={() => { handleClose(); navigate({ type: 'product', id: product.id }); }}
-              className="mt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-[#6B6560] hover:text-[#8B6F47] self-center transition-colors duration-300 font-sans"
+              className="mt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-[#6B6560] hover:text-[#C9A97A] self-center transition-colors duration-300 font-sans"
             >
               View Full Details &rarr;
             </button>

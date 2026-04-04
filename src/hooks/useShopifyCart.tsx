@@ -83,42 +83,36 @@ export function useShopifyCart() {
 
   const addItem = useCallback(async (product: Product, quantity: number, color: string, variantId?: string) => {
     console.log('useShopifyCart addItem called:', { product, quantity, color, variantId });
-    // Optimistic update
+    
+    // Always add to local cart first (optimistic)
     addToCartLocal(product, quantity, color);
     setCartDrawerOpen(true);
 
-    startTransition(async () => {
-      console.log('Calling addToCartAction...');
-      const result = await addToCartAction(cartId, variantId || '', quantity);
-      console.log('addToCartAction result:', result);
-      if (result.success && result.cart) {
-        if (!cartId && result.cart.id) {
-          setCartId(result.cart.id);
+    // If we have a valid Shopify variant, try to create cart in background
+    // but DON'T replace local cart - just store the checkout URL
+    if (variantId && variantId.startsWith('gid://')) {
+      startTransition(async () => {
+        try {
+          const result = await addToCartAction(cartId, variantId, quantity);
+          if (result.success && result.cart?.checkoutUrl) {
+            if (!cartId && result.cart.id) {
+              setCartId(result.cart.id);
+            }
+            // Update just the checkoutUrl in existing cart, keep local items
+            const currentCart = useShopifyStore.getState().cart;
+            if (currentCart) {
+              useShopifyStore.getState().setCart({
+                ...currentCart,
+                checkoutUrl: result.cart.checkoutUrl,
+              });
+            }
+          }
+        } catch (e) {
+          console.log('Shopify sync failed, keeping local cart');
         }
-        // Optionally sync cart from Shopify
-        if (result.cart) {
-          console.log('Setting cart with checkoutUrl:', result.cart.checkoutUrl);
-          // Transform Shopify cart to local format
-          setCart({
-            id: result.cart.id,
-            checkoutUrl: result.cart.checkoutUrl,
-            totalQuantity: result.cart.totalQuantity,
-            lines: result.cart.lines.edges?.map((edge: any) => ({
-              product: {
-                id: parseInt(edge.node.merchandise.product.id.replace('gid://shopify/Product/', '')),
-                name: edge.node.merchandise.product.title,
-                price: parseFloat(edge.node.merchandise.price.amount),
-                image: edge.node.merchandise.product.images.edges[0]?.node.url || '',
-              } as Product,
-              quantity: edge.node.quantity,
-              selectedColor: edge.node.merchandise.selectedOptions.find((o: any) => o.name === 'Color')?.value || '',
-            })) || [],
-            subtotal: parseFloat(result.cart.cost.subtotalAmount.amount),
-          });
-        }
-      }
-    });
-  }, [cartId, addToCartLocal, setCartDrawerOpen, setCartId, setCart]);
+      });
+    }
+  }, [cartId, addToCartLocal, setCartDrawerOpen, setCartId]);
 
   const updateItem = useCallback(async (lineId: string, quantity: number) => {
     if (!cartId) return;

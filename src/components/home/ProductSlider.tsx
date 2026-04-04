@@ -33,7 +33,7 @@ export default function ProductSlider({ title, subtitle, items, actionLabel, cou
       <div className="flex items-end justify-between mb-8 sm:mb-10">
         <div>
           {subtitle && (
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#8B6F47] mb-2 font-sans">
+            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#C9A97A] mb-2 font-sans">
               {subtitle}
             </p>
           )}
@@ -44,7 +44,7 @@ export default function ProductSlider({ title, subtitle, items, actionLabel, cou
         {actionLabel && (
           <button
             onClick={() => window.location.hash = '#/shop'}
-            className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#1C1614] hover:text-[#8B6F47] transition-colors font-sans group"
+            className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#1C1614] hover:text-[#C9A97A] transition-colors font-sans group"
           >
             {actionLabel}
             <ChevronRight size={12} strokeWidth={1.5} className="transition-transform group-hover:translate-x-1" />

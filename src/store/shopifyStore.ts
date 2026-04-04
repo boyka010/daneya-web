@@ -70,48 +70,61 @@ export const useStore = create<StoreState>()(
       setCartId: (cartId) => set({ cartId }),
       
       addToCart: (product, quantity, selectedColor, variantId) => {
-        const items = get().cart?.lines || [];
-        const existingIndex = items.findIndex(
+        const existingItems = get().cart?.lines || [];
+        const existingIndex = existingItems.findIndex(
           (item) => item.product.id === product.id && item.selectedColor === selectedColor
         );
         
+        let newItems;
         if (existingIndex > -1) {
-          const updated = [...items];
-          updated[existingIndex].quantity += quantity;
-          set({ cart: { ...get().cart!, lines: updated, subtotal: get().getCartTotal() } });
+          newItems = [...existingItems];
+          newItems[existingIndex].quantity += quantity;
         } else {
-          set({
-            cart: {
-              ...get().cart!,
-              lines: [...items, { product, quantity, selectedColor, variantId }],
-              subtotal: get().getCartTotal(),
-              totalQuantity: (get().cart?.totalQuantity || 0) + quantity,
-            },
-          });
+          newItems = [...existingItems, { product, quantity, selectedColor, variantId }];
         }
+        
+        const newSubtotal = newItems.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
+        
+        set({
+          cart: {
+            id: get().cart?.id || `cart_${Date.now()}`,
+            checkoutUrl: get().cart?.checkoutUrl || '',
+            totalQuantity: newItems.reduce((count, item) => count + item.quantity, 0),
+            lines: newItems,
+            subtotal: newSubtotal,
+          },
+        });
       },
 
       updateCartItem: (index, quantity) => {
         const items = [...(get().cart?.lines || [])];
-        items[index].quantity = quantity;
-        set({ cart: { ...get().cart!, lines: items, subtotal: get().getCartTotal() } });
+        if (items[index]) {
+          items[index].quantity = quantity;
+        }
+        const newSubtotal = items.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
+        set({ cart: { ...get().cart!, lines: items, subtotal: newSubtotal } });
       },
 
       removeFromCart: (index) => {
-        const items = (get().cart?.lines || []).filter((_, i) => i !== index);
-        set({ cart: { ...get().cart!, lines: items, subtotal: get().getCartTotal() } });
+        const currentCart = get().cart;
+        if (!currentCart) return;
+        const items = (currentCart.lines || []).filter((_, i) => i !== index);
+        const newSubtotal = items.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
+        set({ cart: { ...currentCart, lines: items, subtotal: newSubtotal } });
       },
 
       clearCart: () => set({ cart: null, cartId: null }),
       
       getCartTotal: () => {
-        const items = get().cart?.lines || [];
-        return items.reduce((total, item) => total + item.product.price * item.quantity, 0);
+        const items = get().cart?.lines;
+        if (!items || !Array.isArray(items)) return 0;
+        return items.reduce((total, item) => total + ((item?.product?.price || 0) * (item?.quantity || 0)), 0);
       },
       
       getCartCount: () => {
-        const items = get().cart?.lines || [];
-        return items.reduce((count, item) => count + item.quantity, 0);
+        const items = get().cart?.lines;
+        if (!items || !Array.isArray(items)) return 0;
+        return items.reduce((count, item) => count + (item?.quantity || 0), 0);
       },
 
       // Wishlist

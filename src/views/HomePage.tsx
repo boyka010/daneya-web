@@ -26,24 +26,24 @@ function SectionHeader({ title, subtitle, actionLabel, onAction }: {
   onAction?: () => void;
 }) {
   return (
-    <div className="flex items-end justify-between mb-8 sm:mb-10">
+    <div className="flex items-end justify-between mb-12 sm:mb-16">
       <div>
         {subtitle && (
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#8B6F47] mb-2 font-sans">
+          <p className="text-caption text-[#C9A97A] mb-3">
             {subtitle}
           </p>
         )}
-        <h2 className="section-heading text-xl sm:text-2xl lg:text-[1.75rem] text-[#1C1614]">
+        <h2 className="text-title lg:text-3xl text-[#1C1614]">
           {title}
         </h2>
       </div>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#1C1614] hover:text-[#8B6F47] transition-colors font-sans group"
+          className="hidden sm:flex items-center gap-3 text-caption text-[#1C1614] hover:text-[#C9A97A] transition-colors group"
         >
           {actionLabel}
-          <ArrowRight size={12} strokeWidth={1.5} className="transition-transform group-hover:translate-x-1" />
+          <ArrowRight size={14} strokeWidth={1} className="transition-transform group-hover:translate-x-1" />
         </button>
       )}
     </div>
@@ -53,26 +53,26 @@ function SectionHeader({ title, subtitle, actionLabel, onAction }: {
 /* ─── Trust Badges ─── */
 function TrustBadges() {
   return (
-    <section className="py-8 bg-[#F5F2EE] border-y border-[#E8E4DF]">
-      <div className="px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+    <section className="py-12 sm:py-16 bg-white border-y border-[#E8E4DF]">
+      <div className="px-6 sm:px-10 lg:px-16 max-w-[1600px] mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           {[
             { icon: '🚚', title: 'Free Shipping', desc: 'On orders over EGP 2,000' },
             { icon: '🛡️', title: 'Secure Payment', desc: '100% Secure checkout' },
-            { icon: '↩️', title: 'Easy Returns', desc: '30-day return policy' },
+            { icon: '↩️', title: 'Easy Returns', desc: '7-day return policy' },
             { icon: '💬', title: 'WhatsApp Support', desc: 'Quick responses' },
           ].map((badge, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-3"
+              transition={{ delay: i * 0.15 }}
+              className="flex items-center gap-4"
             >
-              <span className="text-2xl">{badge.icon}</span>
+              <span className="text-2xl lg:text-3xl">{badge.icon}</span>
               <div>
-                <p className="text-[11px] font-semibold text-warm-text">{badge.title}</p>
-                <p className="text-[9px] text-muted-foreground font-light">{badge.desc}</p>
+                <p className="text-caption text-[#1C1614]">{badge.title}</p>
+                <p className="text-xs text-[#6B6560] font-light mt-0.5">{badge.desc}</p>
               </div>
             </motion.div>
           ))}
@@ -82,44 +82,45 @@ function TrustBadges() {
   );
 }
 
-/* ─── Offers Section - 3 Offers ─── */
+/* ─── Offers Section - Clean, no fake sales ─── */
 function OffersSection() {
   return (
-    <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+    <section className="py-16 sm:py-20 px-6 sm:px-10 lg:px-16 max-w-[1600px] mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
         {[
           {
-            title: 'Buy 1 Get 1',
-            subtitle: 'Free abaya on all sets',
-            bg: 'bg-gradient-to-r from-rose-500 to-pink-500',
-            icon: '🎁',
-          },
-          {
-            title: 'Flash Sale',
-            subtitle: 'Up to 70% OFF',
-            bg: 'bg-gradient-to-r from-amber-500 to-orange-500',
-            icon: '⚡',
+            title: 'New Season',
+            subtitle: 'Explore the latest collection',
+            bg: 'bg-[#1C1614]',
+            icon: '✨',
           },
           {
             title: 'Free Shipping',
-            subtitle: 'Orders over EGP 2,000',
-            bg: 'bg-gradient-to-r from-emerald-500 to-teal-500',
-            icon: '🚚',
+            subtitle: 'On orders over EGP 2,000',
+            bg: 'bg-[#C9A97A]',
+            icon: '📦',
+          },
+          {
+            title: 'WhatsApp Support',
+            subtitle: 'Order directly via WhatsApp',
+            bg: 'bg-[#FAF7F4]',
+            textDark: true,
+            icon: '💬',
           },
         ].map((offer, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+            transition={{ delay: i * 0.15 }}
             onClick={() => navigate({ type: 'shop' })}
-            className={`${offer.bg} p-6 rounded-xl cursor-pointer hover:opacity-90 transition-opacity group`}
+            className={`${offer.bg} p-8 lg:p-10 cursor-pointer group transition-all duration-500 hover:shadow-xl`}
           >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{offer.icon}</span>
+            <div className="flex items-center gap-4">
+              <span className="text-3xl">{offer.icon}</span>
               <div>
-                <h3 className="text-white font-semibold text-lg">{offer.title}</h3>
-                <p className="text-white/80 text-sm">{offer.subtitle}</p>
+                <h3 className={`${offer.textDark ? 'text-[#1C1614]' : 'text-white'} font-serif-heading text-xl lg:text-2xl`}>{offer.title}</h3>
+                <p className={`${offer.textDark ? 'text-[#6B6560]' : 'text-white/70'} text-sm mt-1`}>{offer.subtitle}</p>
               </div>
             </div>
           </motion.div>
@@ -195,7 +196,7 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
   const slide = slides[current];
 
   return (
-    <section className="relative w-full h-[70vh] sm:h-[80vh] lg:h-[85vh] overflow-hidden bg-[#1C1614]">
+    <section className="relative w-full h-[60vh] sm:h-[75vh] lg:h-[90vh] overflow-hidden bg-[#1C1614]">
       {/* Background Image with Ken Burns Effect */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -239,7 +240,7 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
 
       {/* Content - Left Aligned */}
       <div className="absolute inset-0 flex items-center">
-        <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-20 w-full">
+        <div className="max-w-[1600px] mx-auto px-8 sm:px-12 lg:px-20 w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -247,16 +248,16 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 30 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-xl"
+              className="max-w-2xl"
             >
               {/* Overline */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="overflow-hidden mb-4"
+                className="overflow-hidden mb-6"
               >
-                <span className="inline-block text-[#C9A97A] text-[10px] font-medium uppercase tracking-[0.35em] border-b border-[#C9A97A] pb-2">
+                <span className="inline-block text-[#C9A97A] text-xs uppercase tracking-[0.4em] border-b border-[#C9A97A] pb-3">
                   {slide.overline}
                 </span>
               </motion.div>
@@ -266,7 +267,7 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.8 }}
-                className="font-serif-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-normal text-white leading-[1.1] tracking-[0.02em]"
+                className="text-display text-white leading-[1.05]"
               >
                 {slide.title}
               </motion.h1>
@@ -276,7 +277,7 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45, duration: 0.6 }}
-                className="mt-6 text-white/70 text-sm sm:text-base font-light leading-relaxed max-w-md"
+                className="mt-8 text-white/60 text-lg font-light leading-relaxed max-w-lg"
               >
                 {slide.subtitle}
               </motion.p>
@@ -288,19 +289,12 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
                 transition={{ delay: 0.6, duration: 0.6 }}
               >
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate({ type: slide.link as any })}
-                  className="group mt-8 sm:mt-10 relative overflow-hidden bg-[#C9A97A] text-[#1C1614] px-10 py-4"
+                  className="btn-primary mt-12"
                 >
-                  <span className="relative z-10 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.18em] flex items-center gap-3">
-                    {slide.cta}
-                    <ArrowRight size={14} strokeWidth={1.5} className="transition-transform group-hover:translate-x-1" />
-                  </span>
-                  <div className="absolute inset-0 bg-[#1C1614] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out" />
-                  <span className="absolute inset-0 z-10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {slide.cta}
-                  </span>
+                  {slide.cta}
                 </motion.button>
               </motion.div>
             </motion.div>
@@ -637,19 +631,32 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+    
     async function loadProducts() {
+      // Show loading for at least 500ms to avoid flash
+      const minLoading = new Promise(resolve => setTimeout(resolve, 500));
+      
       try {
         const products = await getShopifyProducts();
-        setShopifyProducts(products);
+        if (!cancelled) {
+          setShopifyProducts(products);
+        }
       } catch (error) {
         console.error('Failed to load Shopify products:', error);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          await minLoading;
+          setIsLoading(false);
+        }
       }
     }
+    
     loadProducts();
+    return () => { cancelled = true; };
   }, []);
 
+  // Use local products immediately, Shopify products will overlay if loaded
   const products = shopifyProducts.length > 0 ? shopifyProducts : storeProducts;
 
   const renderSection = (section: HomeSection) => {
@@ -675,7 +682,7 @@ export default function HomePage() {
             key={section.id}
             title={section.title}
             subtitle={section.subtitle}
-            items={products.slice(0, 8)}
+            items={products.slice(12, 24)}
             actionLabel="View All"
             count={(section.config.count as number) || 8}
           />

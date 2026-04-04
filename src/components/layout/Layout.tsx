@@ -6,11 +6,11 @@ import Footer from './Footer';
 import BottomNav from './BottomNav';
 import CartDrawer from '@/components/cart/CartDrawer';
 import ProductQuickView from '@/components/product/ProductQuickView';
+import ExitIntentPopup from '@/components/ui/ExitIntentPopup';
+import StickyCTAs from '@/components/ui/StickyCTAs';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const currentPage = useStore((s) => s.currentPage);
-  const isSearchOpen = useStore((s) => s.isSearchOpen);
-  const setSearchOpen = useStore((s) => s.setSearchOpen);
 
   if (currentPage.type === 'admin') {
     return <>{children}</>;
@@ -24,6 +24,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <BottomNav />
       <CartDrawer />
       <ProductQuickView />
+      <ExitIntentPopup />
+      <StickyCTAs />
     </div>
   );
 }

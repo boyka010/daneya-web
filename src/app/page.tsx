@@ -18,7 +18,6 @@ import ReturnsPage from '@/views/ReturnsPage';
 import SizeGuidePage from '@/views/SizeGuidePage';
 import FAQPage from '@/views/FAQPage';
 import ContactPage from '@/views/ContactPage';
-import OrderTrackingPage from '@/views/OrderTrackingPage';
 
 function PageRenderer() {
   const currentPage = useStore((s) => s.currentPage);
@@ -38,7 +37,6 @@ function PageRenderer() {
       case 'size-guide': return <SizeGuidePage />;
       case 'faq': return <FAQPage />;
       case 'contact': return <ContactPage />;
-      case 'order-tracking': return <OrderTrackingPage />;
       case 'admin': return <AdminPage />;
       default: return <HomePage />;
     }

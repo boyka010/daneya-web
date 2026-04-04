@@ -55,21 +55,33 @@ export default function ShopPage() {
   const [isLoadingShopify, setIsLoadingShopify] = useState(true);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Fetch products from Shopify
+  // Fetch products from Shopify with timeout handling
   useEffect(() => {
+    let cancelled = false;
+    
     async function loadShopifyProducts() {
+      // Show loading briefly
+      const minLoading = new Promise(resolve => setTimeout(resolve, 300));
+      
       try {
         console.log('Fetching Shopify products...');
         const products = await getShopifyProducts();
         console.log('Shopify products response:', products);
-        setShopifyProducts(products);
+        if (!cancelled) {
+          setShopifyProducts(products);
+        }
       } catch (error) {
         console.error('Failed to load Shopify products:', error);
       } finally {
-        setIsLoadingShopify(false);
+        if (!cancelled) {
+          await minLoading;
+          setIsLoadingShopify(false);
+        }
       }
     }
+    
     loadShopifyProducts();
+    return () => { cancelled = true; };
   }, []);
 
   // Use Shopify products if available, otherwise fallback to local
@@ -217,8 +229,8 @@ export default function ShopPage() {
                         className={cn(
                           'w-full text-left px-3 py-2 text-[11px] font-light font-sans transition-colors',
                           sortBy === option.value
-                            ? 'text-[#8B6F47] bg-[#F5F2EE]/30'
-                            : 'text-[#1C1614] hover:text-[#8B6F47] hover:bg-[#F5F2EE]/20'
+                            ? 'text-[#C9A97A] bg-[#F5F2EE]/30'
+                            : 'text-[#1C1614] hover:text-[#C9A97A] hover:bg-[#F5F2EE]/20'
                         )}
                       >
                         {option.label}
@@ -273,10 +285,11 @@ export default function ShopPage() {
             All
           </button>
           {categories.map(cat => (
-          <button
-            type="button"
-            onClick={() => setActiveCategory(cat.slug)}
-            className={cn(
+            <button
+              key={cat.slug}
+              type="button"
+              onClick={() => setActiveCategory(cat.slug)}
+              className={cn(
                 'flex-shrink-0 py-3 px-2 text-[11px] font-medium uppercase tracking-[0.12em] border-b-2 transition-colors font-sans snap-start',
                 activeCategory === cat.slug
                   ? 'text-[#1C1614] border-[#1C1614]'
@@ -296,7 +309,7 @@ export default function ShopPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#1C1614] font-sans">Filters</h3>
               {hasFilters && (
-                <button onClick={clearFilters} className="text-[9px] text-[#6B6560] hover:text-[#8B6F47] transition-colors font-sans">
+                <button onClick={clearFilters} className="text-[9px] text-[#6B6560] hover:text-[#C9A97A] transition-colors font-sans">
                   Clear All
                 </button>
               )}
@@ -313,7 +326,7 @@ export default function ShopPage() {
                   placeholder="Min"
                   value={priceRange[0] || ''}
                   onChange={(e) => setPriceRange([Number(e.target.value) || 0, priceRange[1]])}
-                  className="w-full px-2 py-1.5 text-[10px] border border-[#E8E4DF] bg-transparent text-[#1C1614] font-sans focus:border-[#8B6F47]"
+                  className="w-full px-2 py-1.5 text-[10px] border border-[#E8E4DF] bg-transparent text-[#1C1614] font-sans focus:border-[#C9A97A]"
                 />
                 <span className="text-[#6B6560] text-[10px]">—</span>
                 <input
@@ -321,7 +334,7 @@ export default function ShopPage() {
                   placeholder="Max"
                   value={priceRange[1] === 10000 ? '' : priceRange[1]}
                   onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value) || 10000])}
-                  className="w-full px-2 py-1.5 text-[10px] border border-[#E8E4DF] bg-transparent text-[#1C1614] font-sans focus:border-[#8B6F47]"
+                  className="w-full px-2 py-1.5 text-[10px] border border-[#E8E4DF] bg-transparent text-[#1C1614] font-sans focus:border-[#C9A97A]"
                 />
               </div>
             </div>
@@ -345,8 +358,8 @@ export default function ShopPage() {
                     className={cn(
                       'px-3 py-1 text-[10px] border transition-colors font-sans',
                       selectedColors.includes(color.toLowerCase())
-                        ? 'border-[#8B6F47] bg-[#8B6F47] text-white'
-                        : 'border-[#E8E4DF] text-[#1C1614] hover:border-[#8B6F47]'
+                        ? 'border-[#C9A97A] bg-[#C9A97A] text-white'
+                        : 'border-[#E8E4DF] text-[#1C1614] hover:border-[#C9A97A]'
                     )}
                   >
                     {color}
@@ -363,7 +376,7 @@ export default function ShopPage() {
               <div className="space-y-2">
                 {['Premium Crepe', 'Chiffon', 'Satin', 'Linen', 'Knitted Cotton', 'Modal Cotton'].map(material => (
                   <label key={material} className="flex items-center gap-2 cursor-pointer group">
-                    <div className="w-3.5 h-3.5 border border-[#E8E4DF] group-hover:border-[#8B6F47] transition-colors flex items-center justify-center">
+                    <div className="w-3.5 h-3.5 border border-[#E8E4DF] group-hover:border-[#C9A97A] transition-colors flex items-center justify-center">
                       <input type="checkbox" className="sr-only" />
                     </div>
                     <span className="text-[11px] text-[#1C1614]/70 font-light font-sans">{material}</span>
@@ -378,7 +391,7 @@ export default function ShopPage() {
         <div className="flex-1">
           {isLoadingShopify ? (
             <div className="py-20 text-center">
-              <Loader2 size={32} className="animate-spin mx-auto text-[#8B6F47] mb-4" />
+              <Loader2 size={32} className="animate-spin mx-auto text-[#C9A97A] mb-4" />
               <p className="text-xs text-[#6B6560] font-light font-sans">Loading products...</p>
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -387,7 +400,7 @@ export default function ShopPage() {
               <p className="text-xs text-[#6B6560] font-light font-sans">Try adjusting your filters</p>
               <button
                 onClick={clearFilters}
-                className="mt-4 text-[10px] font-medium uppercase tracking-[0.12em] text-[#8B6F47] hover:text-[#1C1614] transition-colors font-sans"
+                className="mt-4 text-[10px] font-medium uppercase tracking-[0.12em] text-[#C9A97A] hover:text-[#1C1614] transition-colors font-sans"
               >
                 Clear Filters
               </button>

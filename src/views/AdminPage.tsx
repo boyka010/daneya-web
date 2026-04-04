@@ -13,8 +13,8 @@ import ThemeBuilder from '@/components/admin/ThemeBuilder';
 import SettingsPage from '@/components/admin/SettingsPage';
 import { Lock, ShieldAlert, X } from 'lucide-react';
 
-const SESSION_KEY = 'haya-admin-auth';
-const SESSION_TIMESTAMP_KEY = 'haya-admin-auth-time';
+const SESSION_KEY = 'daneya-admin-auth';
+const SESSION_TIMESTAMP_KEY = 'daneya-admin-auth-time';
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
 function generateSecureToken(): string {
@@ -29,7 +29,7 @@ function generateSecureToken(): string {
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-const ADMIN_CREDENTIALS_KEY = 'haya-admin-creds';
+const ADMIN_CREDENTIALS_KEY = 'daneya-admin-creds';
 
 function hashCredential(input: string): string {
   let hash = 0;
@@ -46,7 +46,7 @@ function getStoredCredentials(): { pinHash: string; salt: string } | null {
   const stored = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
   if (!stored) {
     const defaultSalt = generateSecureToken();
-    const defaultPinHash = hashCredential('haya2025' + defaultSalt);
+    const defaultPinHash = hashCredential('daneya2025' + defaultSalt);
     localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify({ pinHash: defaultPinHash, salt: defaultSalt }));
     return { pinHash: defaultPinHash, salt: defaultSalt };
   }

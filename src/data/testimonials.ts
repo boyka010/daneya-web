@@ -5,39 +5,49 @@ export interface Testimonial {
   avatar: string;
   rating: number;
   text: string;
+  product: string;
+  verified: boolean;
 }
 
 export const testimonials: Testimonial[] = [
   {
     id: 1,
-    name: "Fatima A.",
-    location: "Dubai, UAE",
-    avatar: "/images/testimonials/avatar-1.png",
+    name: "Nour E.",
+    location: "Cairo, Egypt",
+    avatar: "",
     rating: 5,
-    text: "The quality is absolutely unmatched. I've tried dozens of hijab brands, and HAYA is in a league of its own. The silk collection feels like wearing pure luxury.",
+    text: "The quality is amazing — the fabric feels so premium and the fit is perfect for everyday wear. I've gotten so many compliments on my Aura Set. Will definitely be ordering more!",
+    product: "Aura Oversized Abaya Set",
+    verified: true,
   },
   {
     id: 2,
-    name: "Sarah M.",
-    location: "London, UK",
-    avatar: "/images/testimonials/avatar-2.png",
+    name: "Menna A.",
+    location: "Alexandria, Egypt",
+    avatar: "",
     rating: 5,
-    text: "Finally, a brand that understands modest fashion doesn't mean boring. The colors, the drape, the packaging — everything is perfection. My entire wardrobe is now HAYA.",
+    text: "Finally found a brand that gets modest fashion right. The Ripple Set is my go-to now — comfortable, elegant, and the color is exactly as shown. Shipping was fast too!",
+    product: "Ripple Oversized Set",
+    verified: true,
   },
   {
     id: 3,
-    name: "Amina K.",
-    location: "Toronto, Canada",
-    avatar: "/images/testimonials/avatar-3.png",
+    name: "Sara M.",
+    location: "Giza, Egypt",
+    avatar: "",
     rating: 5,
-    text: "I ordered 6 hijabs for my wedding trousseau and each one was more beautiful than the last. The burgundy silk was the showstopper. Worth every penny.",
+    text: "I was hesitant to order online but the quality exceeded my expectations. The fabric is breathable and the abaya drapes beautifully. My mom loved hers too so we ordered matching sets!",
+    product: "Daneya Oversized Abaya",
+    verified: true,
   },
   {
     id: 4,
-    name: "Noor H.",
-    location: "Kuala Lumpur, Malaysia",
-    avatar: "/images/testimonials/avatar-4.png",
-    rating: 5,
-    text: "The fabric quality is incredible — so soft and breathable even in our tropical climate. I wear my HAYA hijabs every single day and they still look brand new.",
+    name: "Hana K.",
+    location: "Mansoura, Egypt",
+    avatar: "",
+    rating: 4,
+    text: "Beautiful pieces and great customer service. The packaging was lovely and the abaya fits perfectly. Only wish they had more color options. Already recommended to my friends!",
+    product: "Essentials Abaya",
+    verified: true,
   },
 ];

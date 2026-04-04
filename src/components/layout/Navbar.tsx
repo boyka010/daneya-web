@@ -30,8 +30,8 @@ const navLinks: NavLink[] = [
     labelAr: 'تسوقي كل المنتجات',
     children: [
       { label: 'New Arrivals', labelAr: 'وصل حديثاً', href: '/shop', image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=500&fit=crop' },
-      { label: 'Best Sellers', labelAr: 'الأكثر مبيعاً', href: '/shop', image: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop' },
-      { label: 'Sale', labelAr: 'تخفيضات', href: '/shop', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop' },
+      { label: 'Best Sellers', labelAr: 'الأكثر مبيعاً', href: '/shop', image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=500&fit=crop' },
+      { label: 'Sale', labelAr: 'تخفيضات', href: '/shop', image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=500&fit=crop' },
     ]
   },
   { 
@@ -59,6 +59,7 @@ const navLinks: NavLink[] = [
 ];
 
 export default function Navbar() {
+  const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ReturnType<typeof searchProducts>>([]);
@@ -80,6 +81,10 @@ export default function Navbar() {
   const isHomePage = currentPage.type === 'home';
 
   const isRTL = locale === 'ar';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -172,10 +177,10 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             {/* Social icons — hidden on mobile */}
             <div className="hidden lg:flex items-center gap-3">
-              <a href="#" className="text-[#1C1614]/50 hover:text-[#8B6F47] transition-colors duration-300" aria-label="Instagram">
+              <a href="#" className="text-[#1C1614]/50 hover:text-[#C9A97A] transition-colors duration-300" aria-label="Instagram">
                 <Instagram size={14} strokeWidth={1.5} />
               </a>
-              <a href="#" className="text-[#1C1614]/50 hover:text-[#8B6F47] transition-colors duration-300" aria-label="Facebook">
+              <a href="#" className="text-[#1C1614]/50 hover:text-[#C9A97A] transition-colors duration-300" aria-label="Facebook">
                 <Facebook size={14} strokeWidth={1.5} />
               </a>
             </div>
@@ -183,7 +188,7 @@ export default function Navbar() {
             {/* Hamburger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-1.5 -ml-1.5 text-[#1C1614] hover:text-[#8B6F47] transition-colors"
+              className="lg:hidden p-1.5 -ml-1.5 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
               aria-label="Open menu"
             >
               <Menu size={20} strokeWidth={1.5} />
@@ -237,7 +242,7 @@ export default function Navbar() {
           {/* Center — Logo */}
           <button
             onClick={() => navigate({ type: 'home' })}
-            className="absolute left-1/2 -translate-x-1/2 font-serif-heading text-[1.65rem] sm:text-[1.85rem] font-normal tracking-[0.08em] text-[#1C1614] hover:text-[#8B6F47] transition-colors duration-300"
+            className="absolute left-1/2 -translate-x-1/2 font-serif-heading text-2xl sm:text-3xl font-normal tracking-[0.15em] text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-500"
           >
             DANEYA
           </button>
@@ -247,7 +252,7 @@ export default function Navbar() {
             {/* Language Toggle */}
             <button
               onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
-              className="hidden sm:flex items-center gap-1 p-2 text-[#1C1614] hover:text-[#8B6F47] transition-colors duration-300"
+              className="hidden sm:flex items-center gap-1 p-2 text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-300"
               aria-label="Change language"
             >
               <Globe size={16} strokeWidth={1.5} />
@@ -259,8 +264,8 @@ export default function Navbar() {
               className={cn(
                 'relative p-2 transition-colors duration-300',
                 scrolled || !isHomePage
-                  ? 'text-[#1C1614] hover:text-[#8B6F47]'
-                  : 'text-[#1C1614] hover:text-[#8B6F47]'
+                  ? 'text-[#1C1614] hover:text-[#C9A97A]'
+                  : 'text-[#1C1614] hover:text-[#C9A97A]'
               )}
               aria-label="Search"
             >
@@ -268,24 +273,24 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => navigate({ type: 'wishlist' })}
-              className="relative p-2 text-[#1C1614] hover:text-[#8B6F47] transition-colors duration-300"
+              className="relative p-2 text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-300"
               aria-label="Wishlist"
             >
               <Heart size={18} strokeWidth={1.5} />
               {wishCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center text-[8px] bg-[#8B6F47] text-white font-medium font-sans">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center text-[8px] bg-[#C9A97A] text-white font-medium font-sans">
                   {wishCount}
                 </span>
               )}
             </button>
             <button
               onClick={() => setCartDrawerOpen(true)}
-              className="relative p-2 text-[#1C1614] hover:text-[#8B6F47] transition-colors duration-300"
+              className="relative p-2 text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-300"
               aria-label="Bag"
             >
               <ShoppingBag size={18} strokeWidth={1.5} />
-              {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center text-[8px] bg-[#8B6F47] text-white font-medium font-sans">
+              {mounted && cartCount > 0 && (
+                <span suppressHydrationWarning className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center text-[8px] bg-[#C9A97A] text-white font-medium font-sans">
                   {cartCount}
                 </span>
               )}
@@ -315,7 +320,7 @@ export default function Navbar() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('search.placeholder')}
                     className={cn(
-                      'w-full py-2.5 bg-transparent text-sm font-light text-[#1C1614] placeholder:text-[#6B6560] border-b border-[#E8E4DF] focus:border-[#8B6F47] transition-colors',
+                      'w-full py-2.5 bg-transparent text-sm font-light text-[#1C1614] placeholder:text-[#6B6560] border-b border-[#E8E4DF] focus:border-[#C9A97A] transition-colors',
                       isRTL ? 'pr-6 pl-10' : 'pl-6 pr-10'
                     )}
                     autoFocus
@@ -395,7 +400,7 @@ export default function Navbar() {
                               const category = getCategoryFromHref(child.href);
                               navigate({ type: 'shop', category });
                             }}
-                            className="text-sm font-medium text-[#1C1614] hover:text-[#8B6F47] transition-colors"
+                            className="text-sm font-medium text-[#1C1614] hover:text-[#C9A97A] transition-colors"
                           >
                             {locale === 'ar' ? child.labelAr : child.label}
                           </button>
@@ -444,7 +449,7 @@ export default function Navbar() {
                     setMobileMenuOpen(false);
                     navigate({ type: link.href?.includes('about') ? 'about' : 'shop' });
                   }}
-                  className="font-serif-heading text-2xl sm:text-3xl font-normal tracking-wide text-[#1C1614] hover:text-[#8B6F47] transition-colors duration-300"
+                  className="font-serif-heading text-2xl sm:text-3xl font-normal tracking-wide text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-300"
                 >
                   {locale === 'ar' ? link.labelAr : link.label}
                 </motion.button>
@@ -468,10 +473,10 @@ export default function Navbar() {
               </button>
             </div>
             <div className="flex items-center justify-center gap-5 pb-8">
-              <a href="#" className="text-[#6B6560] hover:text-[#8B6F47] transition-colors" aria-label="Instagram">
+              <a href="#" className="text-[#6B6560] hover:text-[#C9A97A] transition-colors" aria-label="Instagram">
                 <Instagram size={16} strokeWidth={1.5} />
               </a>
-              <a href="#" className="text-[#6B6560] hover:text-[#8B6F47] transition-colors" aria-label="Facebook">
+              <a href="#" className="text-[#6B6560] hover:text-[#C9A97A] transition-colors" aria-label="Facebook">
                 <Facebook size={16} strokeWidth={1.5} />
               </a>
             </div>

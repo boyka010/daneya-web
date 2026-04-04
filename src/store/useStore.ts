@@ -133,7 +133,7 @@ export const defaultSections: HomeSection[] = [
     id: "sec-4",
     type: "banner",
     enabled: true,
-    title: "Be Bold. Be HAYA.",
+    title: "Be Bold. Be DANEYA.",
     config: { image: "/images/hero/hero-2.png", dark: true },
   },
   {
@@ -155,7 +155,7 @@ export const defaultSections: HomeSection[] = [
     id: "sec-7",
     type: "newsletter",
     enabled: true,
-    title: "Join the HAYA Family",
+    title: "Join the DANEYA Family",
     subtitle: "Get 15% off your first order + early access to new drops",
     config: {},
   },
@@ -714,7 +714,7 @@ export const useStore = create<StoreState>()(
       },
     }),
     {
-      name: "haya-store-v4",
+      name: "daneya-store-v1",
       /**
        * SECURITY FIX (C1/M1): Only persist non-sensitive data to localStorage.
        * paymentInfo, shippingInfo, and orders (which contain customer PII) are

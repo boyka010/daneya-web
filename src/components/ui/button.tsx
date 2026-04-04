@@ -23,7 +23,7 @@ const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
         elegant:
-          "bg-[#1A1A1A] text-[#FAFAFA] border border-[#1A1A1A] uppercase tracking-[0.1em] text-[0.6875rem] font-medium hover:bg-[#8B6F47] hover:border-[#8B6F47] transition-all duration-300",
+          "bg-[#1A1A1A] text-[#FAFAFA] border border-[#1A1A1A] uppercase tracking-[0.1em] text-[0.6875rem] font-medium hover:bg-[#C9A97A] hover:border-[#C9A97A] transition-all duration-300",
         "elegant-outline":
           "bg-transparent text-[#1A1A1A] border border-[#1A1A1A] uppercase tracking-[0.1em] text-[0.6875rem] font-medium hover:bg-[#1A1A1A] hover:text-[#FAFAFA] transition-all duration-300",
         gold:

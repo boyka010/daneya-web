@@ -18,6 +18,8 @@ export interface Product {
   stock?: number;
   sku: string;
   tags: string[];
+  shopifyId?: string;
+  variants?: { id: string; price: number; available: boolean; options: Record<string, string> }[];
 }
 
 export const products: Product[] = [

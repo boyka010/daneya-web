@@ -577,6 +577,12 @@ export function transformShopifyProduct(product: ShopifyProduct) {
     sku: product.handle,
     tags: product.tags,
     shopifyId: product.id,
+    variants: variants.map(v => ({
+      id: v.id,
+      price: v.price,
+      available: v.available,
+      options: v.options,
+    })),
   };
 }
 

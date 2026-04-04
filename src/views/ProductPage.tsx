@@ -118,8 +118,12 @@ export default function ProductPage({ productId }: ProductPageProps) {
     setIsAddingToCart(true);
     console.log('Adding to cart:', product.name, 'ID:', product.id, 'Shopify ID:', product.shopifyId);
     
+    // Get first variant ID from product variants - the product from Shopify has variants with IDs
+    const variantId = (product as any).variants?.[0]?.id || product.shopifyId;
+    console.log('Using variantId:', variantId);
+    
     // Use Shopify cart
-    addItem(product, quantity, selectedColor || product.colors[0]?.name || '');
+    addItem(product, quantity, selectedColor || product.colors[0]?.name || '', variantId);
     
     setIsAddingToCart(false);
   };

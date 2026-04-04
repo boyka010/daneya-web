@@ -13,7 +13,6 @@ import CheckoutPage from '@/views/CheckoutPage';
 import WishlistPage from '@/views/WishlistPage';
 import AboutPage from '@/views/AboutPage';
 import AdminPage from '@/views/AdminPage';
-import TestShopify from './test/shopify-test';
 
 function PageRenderer() {
   const currentPage = useStore((s) => s.currentPage);
@@ -43,10 +42,6 @@ function PageRenderer() {
         transition={{ duration: 0.2 }}
       >
         {renderPage()}
-        {/* TEMP: Shopify Test */}
-        <div className="fixed bottom-4 right-4 z-50">
-          <TestShopify />
-        </div>
       </motion.div>
     </AnimatePresence>
   );

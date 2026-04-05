@@ -187,7 +187,7 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
   const slide = slides[current];
 
   return (
-    <section className="relative w-full h-[65vh] sm:h-[80vh] overflow-hidden bg-[#1C1614]">
+    <section className="relative w-full h-[calc(65vh+56px)] sm:h-[calc(80vh+64px)] -mt-14 sm:-mt-16 overflow-hidden bg-[#1C1614]">
       {/* Background Image with Ken Burns Effect */}
       <AnimatePresence mode="wait">
         <motion.div

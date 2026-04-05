@@ -87,7 +87,11 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      // Only trigger scrolled when past the hero section (roughly 60vh)
+      const heroHeight = window.innerHeight * 0.6;
+      setScrolled(window.scrollY > heroHeight);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -169,7 +173,7 @@ export default function Navbar() {
           'sticky top-0 inset-x-0 z-50 transition-all duration-500',
           scrolled || !isHomePage
             ? 'bg-[#FAF7F4]/95 backdrop-blur-md border-b border-[#E8E4DF]'
-            : 'bg-transparent border-b border-white/10'
+            : 'bg-transparent border-b border-transparent'
         )}
       >
         <nav className="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto">
@@ -178,7 +182,10 @@ export default function Navbar() {
             {/* Hamburger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-1 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
+              className={cn(
+                'lg:hidden p-1 transition-colors',
+                isHomePage && !scrolled ? 'text-white hover:text-[#C9A97A]' : 'text-[#1C1614] hover:text-[#C9A97A]'
+              )}
               aria-label="Open menu"
             >
               <Menu size={18} strokeWidth={1.5} />
@@ -199,7 +206,8 @@ export default function Navbar() {
                       onClick={() => setActiveMegaMenu(activeMegaMenu === link.label ? null : link.label)}
                       onMouseEnter={() => setActiveMegaMenu(link.label)}
                       className={cn(
-                        'text-[10px] font-medium uppercase tracking-[0.15em] text-[#1C1614] hover:text-[#C9A97A] transition-colors flex items-center gap-1',
+                        'text-[10px] font-medium uppercase tracking-[0.15em] hover:text-[#C9A97A] transition-colors flex items-center gap-1',
+                        isHomePage && !scrolled ? 'text-white' : 'text-[#1C1614]',
                         activeMegaMenu === link.label && 'text-[#C9A97A]'
                       )}
                     >
@@ -219,7 +227,10 @@ export default function Navbar() {
                         setMobileMenuOpen(false);
                         navigate({ type: link.href?.includes('about') ? 'about' : 'shop' });
                       }}
-                      className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#1C1614] hover:text-[#C9A97A] transition-colors"
+                      className={cn(
+                        'text-[10px] font-medium uppercase tracking-[0.15em] hover:text-[#C9A97A] transition-colors',
+                        isHomePage && !scrolled ? 'text-white' : 'text-[#1C1614]'
+                      )}
                     >
                       {locale === 'ar' ? link.labelAr : link.label}
                     </button>
@@ -232,7 +243,10 @@ export default function Navbar() {
           {/* Center — Logo */}
           <button
             onClick={() => navigate({ type: 'home' })}
-            className="absolute left-1/2 -translate-x-1/2 font-serif text-lg sm:text-xl tracking-[0.12em] text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-500"
+            className={cn(
+              'absolute left-1/2 -translate-x-1/2 font-serif text-lg sm:text-xl tracking-[0.12em] hover:text-[#C9A97A] transition-colors duration-500',
+              isHomePage && !scrolled ? 'text-white' : 'text-[#1C1614]'
+            )}
           >
             DANEYA
           </button>
@@ -242,7 +256,10 @@ export default function Navbar() {
             {/* Language Toggle */}
             <button
               onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
-              className="hidden sm:flex items-center gap-1 px-2 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
+              className={cn(
+                'hidden sm:flex items-center gap-1 px-2 hover:text-[#C9A97A] transition-colors',
+                isHomePage && !scrolled ? 'text-white' : 'text-[#1C1614]'
+              )}
               aria-label="Change language"
             >
               <Globe size={14} strokeWidth={1.5} />
@@ -251,14 +268,20 @@ export default function Navbar() {
 
             <button
               onClick={() => setSearchOpen(!isSearchOpen)}
-              className="relative p-1.5 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
+              className={cn(
+                'relative p-1.5 hover:text-[#C9A97A] transition-colors',
+                isHomePage && !scrolled ? 'text-white' : 'text-[#1C1614]'
+              )}
               aria-label="Search"
             >
               <Search size={16} strokeWidth={1.5} />
             </button>
             <button
               onClick={() => navigate({ type: 'wishlist' })}
-              className="relative p-1.5 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
+              className={cn(
+                'relative p-1.5 hover:text-[#C9A97A] transition-colors',
+                isHomePage && !scrolled ? 'text-white' : 'text-[#1C1614]'
+              )}
               aria-label="Wishlist"
             >
               <Heart size={16} strokeWidth={1.5} />
@@ -270,7 +293,10 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => setCartDrawerOpen(true)}
-              className="relative p-1.5 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
+              className={cn(
+                'relative p-1.5 hover:text-[#C9A97A] transition-colors',
+                isHomePage && !scrolled ? 'text-white' : 'text-[#1C1614]'
+              )}
               aria-label="Bag"
             >
               <ShoppingBag size={16} strokeWidth={1.5} />

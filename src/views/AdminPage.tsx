@@ -30,6 +30,7 @@ function generateSecureToken(): string {
 }
 
 const ADMIN_CREDENTIALS_KEY = 'daneya-admin-creds';
+const DEFAULT_PIN = '123';
 
 function hashCredential(input: string): string {
   let hash = 0;
@@ -46,7 +47,7 @@ function getStoredCredentials(): { pinHash: string; salt: string } | null {
   const stored = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
   if (!stored) {
     const defaultSalt = generateSecureToken();
-    const defaultPinHash = hashCredential('daneya2025' + defaultSalt);
+    const defaultPinHash = hashCredential(DEFAULT_PIN + defaultSalt);
     localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify({ pinHash: defaultPinHash, salt: defaultSalt }));
     return { pinHash: defaultPinHash, salt: defaultSalt };
   }
@@ -102,9 +103,14 @@ function AdminLockScreen({ onUnlock }: { onUnlock: () => void }) {
   }, [pin, onUnlock]);
 
   const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const value = e.target.value.replace(/\D/g, '').slice(0, 3);
     setPin(value);
     setError(false);
+  };
+
+  const handleResetPin = () => {
+    localStorage.removeItem(ADMIN_CREDENTIALS_KEY);
+    window.location.reload();
   };
 
   return (
@@ -151,6 +157,14 @@ function AdminLockScreen({ onUnlock }: { onUnlock: () => void }) {
               Unlock
             </button>
 
+            <button
+              type="button"
+              onClick={handleResetPin}
+              className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
+            >
+              Reset PIN to 123
+            </button>
+
             <p className="text-[11px] text-gray-400 text-center mt-4">
               Session expires after 30 minutes of inactivity
             </p>
@@ -173,63 +187,55 @@ export default function AdminPage() {
   const currentPage = useStore((s) => s.currentPage);
   const adminSection = useStore((s) => s.adminSection);
   const setAdminSection = useStore((s) => s.setAdminSection);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Check session on mount
-  useEffect(() => {
-    const auth = sessionStorage.getItem(SESSION_KEY);
-    const timestamp = sessionStorage.getItem(SESSION_TIMESTAMP_KEY);
-
+  // Initialize auth state from localStorage (persistent across remounts)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const auth = localStorage.getItem(SESSION_KEY);
+    const timestamp = localStorage.getItem(SESSION_TIMESTAMP_KEY);
     if (auth === 'true' && timestamp) {
       const elapsed = Date.now() - parseInt(timestamp, 10);
       if (elapsed < SESSION_TIMEOUT_MS) {
-        // Refresh timestamp
-        sessionStorage.setItem(SESSION_TIMESTAMP_KEY, Date.now().toString());
-        setIsAuthenticated(true);
-      } else {
-        // Session expired
-        sessionStorage.removeItem(SESSION_KEY);
-        sessionStorage.removeItem(SESSION_TIMESTAMP_KEY);
+        return true;
       }
     }
-    setIsChecking(false);
-  }, []);
+    return false;
+  });
+  const [isChecking, setIsChecking] = useState(false);
 
-  // Auto-logout after 30 minutes
+  // Keep session alive on activity
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    const refreshTimestamp = () => {
+      localStorage.setItem(SESSION_TIMESTAMP_KEY, Date.now().toString());
+    };
+
+    // Refresh on any interaction
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, refreshTimestamp));
+
+    // Also check periodically
     const checkInterval = setInterval(() => {
-      const timestamp = sessionStorage.getItem(SESSION_TIMESTAMP_KEY);
+      const timestamp = localStorage.getItem(SESSION_TIMESTAMP_KEY);
       if (!timestamp) {
         setIsAuthenticated(false);
         return;
       }
       const elapsed = Date.now() - parseInt(timestamp, 10);
       if (elapsed >= SESSION_TIMEOUT_MS) {
-        sessionStorage.removeItem(SESSION_KEY);
-        sessionStorage.removeItem(SESSION_TIMESTAMP_KEY);
+        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(SESSION_TIMESTAMP_KEY);
         setIsAuthenticated(false);
       }
-    }, 60000); // Check every minute
+    }, 60000);
 
     return () => {
       clearInterval(checkInterval);
+      events.forEach(event => window.removeEventListener(event, refreshTimestamp));
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [isAuthenticated]);
-
-  // Clear session on unmount (tab close)
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Using sessionStorage means it's auto-cleared when tab closes.
-      // We keep the session alive while the tab is open via the interval check.
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
 
   // Sync URL section to store
   useEffect(() => {
@@ -242,12 +248,14 @@ export default function AdminPage() {
   }, [currentPage, adminSection, setAdminSection]);
 
   const handleUnlock = useCallback(() => {
+    localStorage.setItem(SESSION_KEY, 'true');
+    localStorage.setItem(SESSION_TIMESTAMP_KEY, Date.now().toString());
     setIsAuthenticated(true);
   }, []);
 
   const handleLogout = useCallback(() => {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(SESSION_TIMESTAMP_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_TIMESTAMP_KEY);
     setIsAuthenticated(false);
   }, []);
 

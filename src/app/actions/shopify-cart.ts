@@ -52,18 +52,21 @@ export async function addToCartAction(cartId: string | null, variantId: string, 
       return { success: false, error: 'Shopify not configured', cart: null }
     }
 
+    // Don't create cart with invalid/fake variant ID - this causes auto-add bug
+    if (!variantId || !variantId.startsWith('gid://')) {
+      console.log('No valid variantId provided - skipping Shopify cart creation');
+      return { success: true, cart: null }
+    }
+
     let cart;
     
-    if (!cartId || !variantId) {
-      console.log('Creating new cart, variantId:', variantId);
-      // Create new cart if none exists
-      cart = await createCart(variantId || 'gid://shopify/ProductVariant/1', quantity);
-      console.log('Created cart object:', JSON.stringify(cart));
+    if (!cartId) {
+      console.log('Creating new cart with valid variantId:', variantId);
+      cart = await createCart(variantId, quantity);
       if (cart?.id) {
         await setCartIdCookie(cart.id)
       }
     } else {
-      // Add to existing cart
       cart = await addToCart(cartId, variantId, quantity)
     }
     

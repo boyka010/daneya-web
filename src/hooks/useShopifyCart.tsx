@@ -1,12 +1,20 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTransition } from 'react';
-import { addToCartAction, createCartAction } from '@/app/actions/shopify-cart';
+import { addToCartAction, createCartAction, getCartAction, updateCartLineAction, removeFromCartAction } from '@/app/actions/shopify-cart';
 import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import type { Product } from '@/data/products';
 import { cn } from '@/lib/utils';
+
+const CART_ID_COOKIE = 'daneya_cart_id';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const matches = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return matches ? matches[2] : null;
+}
 
 interface OptimisticCartButtonProps {
   product: Product;
@@ -80,12 +88,69 @@ export function useShopifyCart() {
   const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   
   const [isPending, startTransition] = useTransition();
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const addItem = useCallback(async (product: Product, quantity: number, color: string, variantId?: string) => {
-    console.log('useShopifyCart addItem called:', { product, quantity, color, variantId });
+  // Sync cart from Shopify on mount
+  useEffect(() => {
+    async function syncCartFromShopify() {
+      const cookieCartId = getCookie(CART_ID_COOKIE);
+      if (!cookieCartId || isSyncing) return;
+      
+      setIsSyncing(true);
+      try {
+        const result = await getCartAction(cookieCartId);
+        if (result.success && result.cart) {
+          // Update local store with Shopify cart data
+          const shopifyCart = result.cart;
+          const lines = shopifyCart.lines?.edges?.map((edge: any) => ({
+            product: {
+              id: parseInt(edge.node.merchandise.product.id.split('/').pop()) || 0,
+              name: edge.node.merchandise.product.title || 'Product',
+              price: parseFloat(edge.node.merchandise.price?.amount || '0'),
+              image: edge.node.merchandise.product.images?.edges?.[0]?.node?.url || '',
+              images: [edge.node.merchandise.product.images?.edges?.[0]?.node?.url || ''],
+              colors: [],
+              sizes: [],
+              category: '',
+              material: '',
+              description: '',
+              rating: 0,
+              reviews: 0,
+              badge: '',
+              sku: '',
+              tags: [],
+            } as Product,
+            quantity: edge.node.quantity,
+            selectedColor: edge.node.merchandise.selectedOptions?.find((o: any) => o.name === 'Color')?.value || '',
+            selectedSize: edge.node.merchandise.selectedOptions?.find((o: any) => o.name === 'Size')?.value || undefined,
+            variantId: edge.node.merchandise.id,
+          })) || [];
+          
+          setCartId(shopifyCart.id);
+          setCart({
+            id: shopifyCart.id,
+            checkoutUrl: shopifyCart.checkoutUrl || '',
+            totalQuantity: shopifyCart.totalQuantity || 0,
+            lines: lines,
+            subtotal: parseFloat(shopifyCart.cost?.subtotalAmount?.amount || '0'),
+          });
+          console.log('Synced cart from Shopify:', lines.length, 'items');
+        }
+      } catch (e) {
+        console.log('Failed to sync cart from Shopify:', e);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
+    
+    syncCartFromShopify();
+  }, []);
+
+  const addItem = useCallback(async (product: Product, quantity: number, color: string, size?: string, variantId?: string) => {
+    console.log('useShopifyCart addItem called:', { product, quantity, color, size, variantId });
     
     // Always add to local cart first (optimistic)
-    addToCartLocal(product, quantity, color);
+    addToCartLocal(product, quantity, color, size);
     setCartDrawerOpen(true);
 
     // If we have a valid Shopify variant, try to create cart in background

@@ -16,6 +16,12 @@ export async function createCartAction(variantId: string, quantity: number = 1) 
 
 export async function addToCartAction(cartId: string, variantId: string, quantity: number = 1) {
   try {
+    // Don't create cart with invalid/fake variant ID
+    if (!variantId || !variantId.startsWith('gid://')) {
+      console.log('No valid variantId - skipping Shopify cart operation');
+      return { success: true, cart: null }
+    }
+
     const cart = await addToCart(cartId, variantId, quantity)
     revalidateTag('cart')
     return { success: true, cart }

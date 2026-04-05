@@ -3,15 +3,24 @@ import { persist } from 'zustand/middleware';
 import type { Product } from '@/data/products';
 import type { PageRoute } from '@/lib/router';
 
+const CART_ID_COOKIE = 'daneya_cart_id';
+
+function getCartIdFromCookie(): string | null {
+  if (typeof document === 'undefined') return null;
+  const matches = document.cookie.match(new RegExp('(^| )' + CART_ID_COOKIE + '=([^;]+)'));
+  return matches ? matches[2] : null;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
   selectedColor: string;
+  selectedSize?: string;
   variantId?: string;
 }
 
 export interface ShopifyCart {
-  id: string;
+  id: string | null;
   checkoutUrl: string;
   totalQuantity: number;
   lines: CartItem[];
@@ -24,7 +33,7 @@ interface StoreState {
   cartId: string | null;
   setCart: (cart: ShopifyCart | null) => void;
   setCartId: (id: string | null) => void;
-  addToCart: (product: Product, quantity: number, color: string, variantId?: string) => void;
+  addToCart: (product: Product, quantity: number, color: string, selectedSize?: string, variantId?: string) => void;
   updateCartItem: (index: number, quantity: number) => void;
   removeFromCart: (index: number) => void;
   clearCart: () => void;
@@ -69,10 +78,10 @@ export const useStore = create<StoreState>()(
       setCart: (cart) => set({ cart }),
       setCartId: (cartId) => set({ cartId }),
       
-      addToCart: (product, quantity, selectedColor, variantId) => {
+      addToCart: (product, quantity, selectedColor, selectedSize, variantId) => {
         const existingItems = get().cart?.lines || [];
         const existingIndex = existingItems.findIndex(
-          (item) => item.product.id === product.id && item.selectedColor === selectedColor
+          (item) => item.product.id === product.id && item.selectedColor === selectedColor && item.selectedSize === selectedSize
         );
         
         let newItems;
@@ -80,14 +89,20 @@ export const useStore = create<StoreState>()(
           newItems = [...existingItems];
           newItems[existingIndex].quantity += quantity;
         } else {
-          newItems = [...existingItems, { product, quantity, selectedColor, variantId }];
+          newItems = [...existingItems, { product, quantity, selectedColor, selectedSize, variantId }];
         }
         
         const newSubtotal = newItems.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
         
+        // Only create a cart ID if we have a real Shopify variant
+        const existingCartId = get().cart?.id;
+        const newCartId = (variantId && variantId.startsWith('gid://') && existingCartId)
+          ? existingCartId
+          : (variantId && variantId.startsWith('gid://') ? `shopify_${Date.now()}` : null);
+        
         set({
           cart: {
-            id: get().cart?.id || `cart_${Date.now()}`,
+            id: newCartId,
             checkoutUrl: get().cart?.checkoutUrl || '',
             totalQuantity: newItems.reduce((count, item) => count + item.quantity, 0),
             lines: newItems,
@@ -164,12 +179,25 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: 'daneya-store',
-      partialize: (state) => ({
-        cart: state.cart,
-        cartId: state.cartId,
-        wishlistItems: state.wishlistItems,
-        isAnnouncementOpen: state.isAnnouncementOpen,
-      }),
+      partialize: (state) => {
+        const cookieCartId = getCartIdFromCookie();
+        
+        // If there's a Shopify cart ID in cookie but different in localStorage, 
+        // we should NOT persist the local cart - it will be synced from Shopify
+        if (cookieCartId && state.cartId !== cookieCartId) {
+          return {
+            wishlistItems: state.wishlistItems,
+            isAnnouncementOpen: state.isAnnouncementOpen,
+          };
+        }
+        
+        return {
+          cart: state.cart,
+          cartId: state.cartId,
+          wishlistItems: state.wishlistItems,
+          isAnnouncementOpen: state.isAnnouncementOpen,
+        };
+      },
     }
   )
 );

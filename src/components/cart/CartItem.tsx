@@ -8,9 +8,10 @@ interface CartItemProps {
   mode?: 'full' | 'compact';
   productId: number;
   color: string;
+  size?: string;
 }
 
-export default function CartItem({ mode = 'full', productId, color }: CartItemProps) {
+export default function CartItem({ mode = 'full', productId, color, size }: CartItemProps) {
   const shopifyCart = useShopifyStore((s) => s.cart);
   const removeFromCart = useShopifyStore((s) => s.removeFromCart);
   const updateCartItem = useShopifyStore((s) => s.updateCartItem);
@@ -18,7 +19,7 @@ export default function CartItem({ mode = 'full', productId, color }: CartItemPr
   if (!shopifyCart?.lines) return null;
   
   const index = shopifyCart.lines.findIndex(
-    (i) => i.product.id === productId && i.selectedColor === color
+    (i) => i.product.id === productId && i.selectedColor === color && i.selectedSize === size
   );
   
   if (index === -1) return null;
@@ -28,8 +29,9 @@ export default function CartItem({ mode = 'full', productId, color }: CartItemPr
   
   const fallbackImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120' viewBox='0 0 100 120'%3E%3Crect width='100' height='120' fill='%23FAF7F4'/%3E%3Crect x='35' y='40' width='30' height='30' rx='15' fill='%23E8E4DF'/%3E%3C/svg%3E";
   
-  const imageUrl = product?.image && typeof product.image === 'string' && product.image.length > 10
-    ? product.image 
+  const rawImage = product?.image;
+  const imageUrl = rawImage && typeof rawImage === 'string' && rawImage.trim().length > 0
+    ? rawImage 
     : fallbackImage;
 
   const handleRemove = () => {
@@ -49,6 +51,7 @@ export default function CartItem({ mode = 'full', productId, color }: CartItemPr
   };
 
   if (mode === 'compact') {
+    if (!imageUrl || imageUrl === fallbackImage) return null;
     return (
       <div className="flex items-center gap-3.5 py-4">
         <div className="w-16 h-20 relative bg-[#FAF7F4] flex-shrink-0 overflow-hidden">
@@ -70,7 +73,7 @@ export default function CartItem({ mode = 'full', productId, color }: CartItemPr
               style={{ backgroundColor: color || '#ccc' }}
             />
             <span className="text-[10px] text-[#6B6560] font-light">
-              {color || 'Default'} · Qty: {quantity}
+              {color || 'Default'}{size ? ` · ${size}` : ''} · Qty: {quantity}
             </span>
           </div>
           <p className="text-xs font-normal text-[#1C1614] mt-1 font-sans">
@@ -120,15 +123,23 @@ export default function CartItem({ mode = 'full', productId, color }: CartItemPr
         </div>
 
         <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center gap-2">
-            <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-[#6B6560] font-sans">Color:</span>
-            <div className="flex items-center gap-1.5">
-              <span
-                className="w-4 h-4 rounded-full border border-[#E8E4DF]"
-                style={{ backgroundColor: color || '#ccc' }}
-              />
-              <span className="text-[10px] text-[#6B6560] font-light">{color || 'Default'}</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-[#6B6560] font-sans">Color:</span>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-4 h-4 rounded-full border border-[#E8E4DF]"
+                  style={{ backgroundColor: color || '#ccc' }}
+                />
+                <span className="text-[10px] text-[#6B6560] font-light">{color || 'Default'}</span>
+              </div>
             </div>
+            {size && (
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-[#6B6560] font-sans">Size:</span>
+                <span className="text-[10px] text-[#6B6560] font-light">{size}</span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center border border-[#E8E4DF]">

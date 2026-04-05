@@ -11,7 +11,7 @@ import { collections } from '@/data/collections';
 import { testimonials } from '@/data/testimonials';
 import ProductCard from '@/components/product/ProductCard';
 import type { HomeSection } from '@/store/useStore';
-import { getShopifyProducts } from '@/lib/shopify-queries';
+import { getShopifyProducts, getShopifyCollections, getCollectionProducts } from '@/lib/shopify-queries';
 import type { Product } from '@/data/products';
 import BrandManifesto from '@/components/home/BrandManifesto';
 import EnhancedTestimonials from '@/components/home/EnhancedTestimonials';
@@ -53,12 +53,12 @@ function SectionHeader({ title, subtitle, actionLabel, onAction }: {
 /* ─── Trust Badges ─── */
 function TrustBadges() {
   return (
-    <section className="py-12 sm:py-16 bg-white border-y border-[#E8E4DF]">
-      <div className="px-6 sm:px-10 lg:px-16 max-w-[1600px] mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+    <section className="py-6 sm:py-8 bg-white border-b border-[#E8E4DF]">
+      <div className="px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {[
-            { icon: '🚚', title: 'Free Shipping', desc: 'On orders over EGP 2,000' },
-            { icon: '🛡️', title: 'Secure Payment', desc: '100% Secure checkout' },
+            { icon: '🚚', title: 'Free Shipping', desc: 'Orders over EGP 2,000' },
+            { icon: '💳', title: 'Secure Payment', desc: 'Visa, Mastercard, Fawry' },
             { icon: '↩️', title: 'Easy Returns', desc: '7-day return policy' },
             { icon: '💬', title: 'WhatsApp Support', desc: 'Quick responses' },
           ].map((badge, i) => (
@@ -66,13 +66,13 @@ function TrustBadges() {
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.15 }}
-              className="flex items-center gap-4"
+              transition={{ delay: i * 0.1 }}
+              className="flex items-center gap-3"
             >
-              <span className="text-2xl lg:text-3xl">{badge.icon}</span>
+              <span className="text-xl">{badge.icon}</span>
               <div>
-                <p className="text-caption text-[#1C1614]">{badge.title}</p>
-                <p className="text-xs text-[#6B6560] font-light mt-0.5">{badge.desc}</p>
+                <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[#1C1614]">{badge.title}</p>
+                <p className="text-[10px] text-[#6B6560] mt-0.5">{badge.desc}</p>
               </div>
             </motion.div>
           ))}
@@ -132,32 +132,23 @@ function OffersSection() {
 
 /* ─── Hero Section ─── */
 function HeroSection({ config }: { config: Record<string, string | number | boolean> }) {
-  const slides = [
-    {
-      image: '/images/hero/hero-1.png',
-      overline: 'NEW COLLECTION',
-      title: 'Eid Al-Fitr Edit',
-      subtitle: 'Discover the new modest luxury collection',
-      cta: 'Shop Collection',
-      link: 'shop',
-    },
-    {
-      image: '/images/hero/hero-2.png',
-      overline: 'JUST ARRIVED',
-      title: 'The Art of Simplicity',
-      subtitle: 'Where contemporary elegance meets timeless modesty',
-      cta: 'Explore Now',
-      link: 'shop',
-    },
-    {
-      image: '/images/hero/hero-3.png',
-      overline: 'EXCLUSIVE',
-      title: 'Quiet Luxury',
-      subtitle: 'Crafted for the modern woman who values distinction',
-      cta: 'Discover',
-      link: 'shop',
-    },
+  const defaultSlides = [
+    { image: '/images/hero/hero-1.png', overline: 'NEW COLLECTION', title: 'Eid Al-Fitr Edit', subtitle: 'Discover the new modest luxury collection', cta: 'Shop Collection', link: '/shop' },
+    { image: '/images/hero/hero-2.png', overline: 'JUST ARRIVED', title: 'The Art of Simplicity', subtitle: 'Where contemporary elegance meets timeless modesty', cta: 'Explore Now', link: '/shop' },
+    { image: '/images/hero/hero-3.png', overline: 'EXCLUSIVE', title: 'Quiet Luxury', subtitle: 'Crafted for the modern woman who values distinction', cta: 'Discover', link: '/shop' },
   ];
+
+  let slides = defaultSlides;
+  if (config.slides) {
+    try {
+      const parsed = JSON.parse(config.slides as string);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        slides = parsed;
+      }
+    } catch {
+      // Use default slides if parsing fails
+    }
+  }
 
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -196,15 +187,15 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
   const slide = slides[current];
 
   return (
-    <section className="relative w-full h-[60vh] sm:h-[75vh] lg:h-[90vh] overflow-hidden bg-[#1C1614]">
+    <section className="relative w-full h-[65vh] sm:h-[80vh] overflow-hidden bg-[#1C1614]">
       {/* Background Image with Ken Burns Effect */}
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
-          initial={{ scale: 1.15, opacity: 0 }}
+          initial={{ scale: 1.12, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-0"
         >
           <Image
@@ -218,164 +209,131 @@ function HeroSection({ config }: { config: Record<string, string | number | bool
         </motion.div>
       </AnimatePresence>
 
-      {/* Elegant Dark Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#1C1614]/80 via-[#1C1614]/30 to-transparent" />
-      <div className="absolute inset-0 bg-[#1C1614]/20" />
+      {/* Light overlay */}
+      <div className="absolute inset-0 bg-black/25" />
 
-      {/* Animated Side Lines */}
-      <div className="absolute left-8 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            className="group flex items-center gap-2"
-          >
-            <span className={`w-8 h-[1px] transition-all duration-500 ${i === current ? 'bg-[#C9A97A] w-12' : 'bg-white/30 group-hover:bg-white/60'}`} />
-            <span className={`text-[9px] uppercase tracking-[0.2em] transition-colors ${i === current ? 'text-[#C9A97A]' : 'text-white/40'}`}>
-              0{i + 1}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {/* Content - Left Aligned */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="max-w-[1600px] mx-auto px-8 sm:px-12 lg:px-20 w-full">
+      {/* Content - Centered, minimal */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center max-w-[1440px] px-6 sm:px-10 w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 30 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-2xl"
             >
               {/* Overline */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                className="overflow-hidden mb-6"
-              >
-                <span className="inline-block text-[#C9A97A] text-xs uppercase tracking-[0.4em] border-b border-[#C9A97A] pb-3">
-                  {slide.overline}
-                </span>
-              </motion.div>
+              {slide.overline && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                  className="mb-4"
+                >
+                  <span className="text-caption text-white/80">
+                    {slide.overline}
+                  </span>
+                </motion.div>
+              )}
 
               {/* Title */}
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.8 }}
-                className="text-display text-white leading-[1.05]"
+                className="text-display"
               >
                 {slide.title}
               </motion.h1>
 
               {/* Subtitle */}
-              <motion.p
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45, duration: 0.6 }}
-                className="mt-8 text-white/60 text-lg font-light leading-relaxed max-w-lg"
-              >
-                {slide.subtitle}
-              </motion.p>
+              {slide.subtitle && (
+                <motion.p
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45, duration: 0.6 }}
+                  className="mt-5 text-white/70 text-base font-light leading-relaxed max-w-lg mx-auto"
+                >
+                  {slide.subtitle}
+                </motion.p>
+              )}
 
               {/* CTA Button */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
+                transition={{ delay: 0.55, duration: 0.6 }}
+                className="mt-8"
               >
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate({ type: slide.link as any })}
-                  className="btn-primary mt-12"
-                >
-                  {slide.cta}
-                </motion.button>
+                {slide.cta && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      const link = slide.link || '/shop';
+                      if (typeof window !== 'undefined') {
+                        window.location.hash = link.startsWith('/') ? `#${link}` : `#/shop`;
+                      }
+                    }}
+                    className="bg-white text-[#1C1614] px-10 py-3.5 text-caption hover:bg-[#C9A97A] hover:text-white transition-all duration-500"
+                  >
+                    {slide.cta}
+                  </motion.button>
+                )}
               </motion.div>
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
-
-      {/* Arrows */}
-      <div className="absolute bottom-8 left-auto right-8 flex items-center gap-3 z-10">
-        <button
-          onClick={goPrev}
-          className="w-12 h-12 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] hover:bg-[#C9A97A]/10 text-white/60 hover:text-[#C9A97A] transition-all duration-300"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft size={16} strokeWidth={1.5} />
-        </button>
-        <button
-          onClick={goNext}
-          className="w-12 h-12 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] hover:bg-[#C9A97A]/10 text-white/60 hover:text-[#C9A97A] transition-all duration-300"
-          aria-label="Next slide"
-        >
-          <ChevronRight size={16} strokeWidth={1.5} />
-        </button>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/10">
-        <motion.div
-          className="h-full bg-[#C9A97A]"
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.1 }}
-        />
-      </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-      >
-        <span className="text-[8px] uppercase tracking-[0.2em] text-white/40">Scroll</span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-[1px] h-8 bg-gradient-to-b from-[#C9A97A] to-transparent"
-        />
-      </motion.div>
     </section>
   );
 }
 
 /* ─── Collections Section ─── */
-function CollectionsSection({ title, collections: collectionData }: { title: string; collections?: { id: string; name: string; slug: string; description: string; image: string; productCount: number; featured?: boolean }[] }) {
+function CollectionsSection({ title, config }: { title: string; config: Record<string, string | number | boolean> }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const featured = (collectionData || collections).filter(c => c.featured);
+
+  // Read collections from config
+  let manualCollections: { name: string; slug: string; image: string }[] = [];
+  if (config.collections) {
+    try {
+      manualCollections = JSON.parse(config.collections as string);
+    } catch {
+      // Use empty if parsing fails
+    }
+  }
+
+  if (manualCollections.length === 0) {
+    return null;
+  }
 
   return (
-    <section className="py-16 sm:py-20 lg:py-24 px-0 max-w-[1600px] mx-auto">
+    <section className="py-8 sm:py-10 lg:py-12 px-0 max-w-[1600px] mx-auto">
+      {/* Centered Title */}
+      <div className="text-center px-4 sm:px-6 mb-8">
+        <h2 className="section-heading">
+          {title}
+        </h2>
+      </div>
       {/* Bigger Circular Collection Cards - Horizontal Scroll */}
       <div
         ref={scrollRef}
         className="flex gap-4 sm:gap-6 lg:gap-10 overflow-x-auto no-scrollbar pb-6 px-4 sm:px-6"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {featured.map((collection, i) => (
+        {manualCollections.map((collection, i) => (
           <motion.button
-            key={collection.id}
+            key={collection.slug}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
             onClick={() => navigate({ type: 'shop', category: collection.slug })}
             className="flex-shrink-0 group flex flex-col items-center"
           >
-            {/* Circle Image - Much Bigger */}
+            {/* Circle Image */}
             <div className="relative w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] lg:w-[280px] lg:h-[280px]">
-              {/* Outer Ring - Gold on hover */}
               <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-[#C9A97A] transition-all duration-500" />
-              
-              {/* Image Container */}
               <div className="absolute inset-[4px] rounded-full overflow-hidden bg-[#F5F2EE]">
                 <Image
                   src={collection.image}
@@ -385,7 +343,6 @@ function CollectionsSection({ title, collections: collectionData }: { title: str
                   sizes="280px"
                   priority={i < 3}
                 />
-                {/* Hover Overlay with Name */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1C1614]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
                   <span className="text-white text-xs font-medium uppercase tracking-[0.15em]">
@@ -394,7 +351,6 @@ function CollectionsSection({ title, collections: collectionData }: { title: str
                 </div>
               </div>
             </div>
-            {/* Collection Name */}
             <span className="mt-4 text-[11px] font-medium uppercase tracking-[0.15em] text-[#1C1614] group-hover:text-[#C9A97A] transition-colors font-sans">
               {collection.name}
             </span>
@@ -405,7 +361,7 @@ function CollectionsSection({ title, collections: collectionData }: { title: str
         <motion.button
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: featured.length * 0.1, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.6, delay: manualCollections.length * 0.1, ease: [0.22, 1, 0.36, 1] }}
           onClick={() => navigate({ type: 'shop' })}
           className="flex-shrink-0 group flex flex-col items-center"
         >
@@ -471,39 +427,57 @@ function ProductGridSection({
 }
 
 /* ─── Banner Section ─── */
-function BannerSection({ title, config }: { title: string; config: Record<string, string | number | boolean> }) {
-  const image = (config.image as string) || '/images/hero/hero-2.png';
-  const isDark = config.dark !== false;
+function BannerSection({ config }: { title: string; config: Record<string, string | number | boolean> }) {
+  const imageDesktop = (config.imageDesktop as string) || '/images/hero/hero-2.png';
+  const imageMobile = (config.imageMobile as string) || imageDesktop;
 
   return (
-    <section className="relative w-full h-[50vh] sm:h-[60vh] overflow-hidden">
-      <Image
-        src={image}
-        alt={title}
-        fill
-        className="object-cover"
-        sizes="100vw"
-      />
-      <div className={`absolute inset-0 ${isDark ? 'hero-grad' : 'bg-gradient-to-t from-black/20 to-transparent'}`} />
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-        <h2 className="font-serif-heading text-2xl sm:text-4xl lg:text-5xl font-normal text-white tracking-wide">
-          {title}
-        </h2>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => navigate({ type: 'shop' })}
-          className="mt-6 sm:mt-8 bg-white text-warm-text px-8 py-3.5 text-[10px] font-medium uppercase tracking-[0.15em] hover:bg-camel hover:text-white transition-all duration-500 font-sans"
-        >
-          Shop Now
-        </motion.button>
+    <section className="relative w-full overflow-hidden">
+      {/* Desktop image - hidden on mobile */}
+      <div className="hidden sm:block relative w-full h-[50vh] lg:h-[60vh]">
+        <Image
+          src={imageDesktop}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="1920px"
+        />
+      </div>
+      {/* Mobile image - hidden on desktop */}
+      <div className="block sm:hidden relative w-full h-[70vh]">
+        <Image
+          src={imageMobile}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="750px"
+        />
       </div>
     </section>
   );
 }
 
 /* ─── Testimonials Section ─── */
-function TestimonialsSection({ title }: { title: string }) {
+function TestimonialsSection({ title, config }: { title: string; config: Record<string, string | number | boolean> }) {
+  const defaultTestimonials = [
+    { id: 1, name: 'Nour E.', location: 'Cairo, Egypt', avatar: '', rating: 5, text: 'The quality is amazing — the fabric feels so premium and the fit is perfect for everyday wear.', product: 'Aura Oversized Abaya Set', verified: true },
+    { id: 2, name: 'Menna A.', location: 'Alexandria, Egypt', avatar: '', rating: 5, text: 'Finally found a brand that gets modest fashion right. The Ripple Set is my go-to now.', product: 'Ripple Oversized Set', verified: true },
+    { id: 3, name: 'Sara M.', location: 'Giza, Egypt', avatar: '', rating: 5, text: 'I was hesitant to order online but the quality exceeded my expectations.', product: 'Daneya Oversized Abaya', verified: true },
+    { id: 4, name: 'Hana K.', location: 'Mansoura, Egypt', avatar: '', rating: 4, text: 'Beautiful pieces and great customer service. The packaging was lovely.', product: 'Essentials Abaya', verified: true },
+  ];
+
+  let testimonials = defaultTestimonials;
+  if (config.testimonials) {
+    try {
+      const parsed = JSON.parse(config.testimonials as string);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        testimonials = parsed;
+      }
+    } catch {
+      // Use default testimonials if parsing fails
+    }
+  }
+
   return (
     <section className="py-16 sm:py-20 lg:py-24 bg-secondary/40">
       <div className="px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
@@ -517,9 +491,9 @@ function TestimonialsSection({ title }: { title: string }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {testimonials.map((testimonial, i) => (
+          {testimonials.map((testimonial: any, i: number) => (
             <motion.div
-              key={testimonial.id}
+              key={testimonial.id || i}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -530,14 +504,18 @@ function TestimonialsSection({ title }: { title: string }) {
                 &ldquo;{testimonial.text}&rdquo;
               </p>
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden">
-                  <Image
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    width={32}
-                    height={32}
-                    className="object-cover w-full h-full"
-                  />
+                <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden flex items-center justify-center">
+                  {testimonial.avatar ? (
+                    <Image
+                      src={testimonial.avatar}
+                      alt={testimonial.name}
+                      width={32}
+                      height={32}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-semibold text-camel">{testimonial.name.charAt(0)}</span>
+                  )}
                 </div>
                 <div>
                   <p className="text-[11px] font-medium text-warm-text font-sans">{testimonial.name}</p>
@@ -622,28 +600,77 @@ function NewsletterSection({ title, subtitle }: { title: string; subtitle?: stri
   );
 }
 
+/* ─── Size Guide Section ─── */
+function SizeGuideSection({ config }: { title: string; config: Record<string, string | number | boolean> }) {
+  const image = (config.image as string) || 'https://daneya.shop/cdn/shop/files/Chest_20251118_234817_0000.png?v=1763519409&width=600';
+
+  return (
+    <section className="py-8 sm:py-10 lg:py-12 px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
+      <div className="text-center mb-8">
+        <h2 className="section-heading">Size Guide</h2>
+      </div>
+      <div className="max-w-2xl mx-auto">
+        <Image
+          src={image}
+          alt="Size Guide"
+          width={600}
+          height={800}
+          className="w-full h-auto"
+        />
+      </div>
+    </section>
+  );
+}
+
 /* ─── Main HomePage ─── */
 export default function HomePage() {
   const homeSections = useStore((s) => s.homeSections);
   const storeProducts = useStore((s) => s.adminProducts);
-  const storeCollections = useStore((s) => s.adminCollections);
   const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
+  const [shopifyCollections, setShopifyCollections] = useState<any[]>([]);
+  const [collectionProducts, setCollectionProducts] = useState<Record<string, Product[]>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     
-    async function loadProducts() {
-      // Show loading for at least 500ms to avoid flash
+    async function loadData() {
       const minLoading = new Promise(resolve => setTimeout(resolve, 500));
       
       try {
-        const products = await getShopifyProducts();
+        const [products, collections] = await Promise.all([
+          getShopifyProducts(),
+          getShopifyCollections(),
+        ]);
         if (!cancelled) {
           setShopifyProducts(products);
+          setShopifyCollections(collections || []);
+
+          // Fetch products for each collection_products section
+          const collectionSections = homeSections.filter(s => s.type === 'collection_products');
+          console.log('Collection sections to fetch:', collectionSections.map(s => ({ title: s.title, handle: s.config.collection })));
+          
+          const fetchPromises = collectionSections.map(async (section) => {
+            const handle = section.config.collection as string;
+            const count = (section.config.count as number) || 8;
+            if (handle) {
+              console.log(`Fetching collection "${handle}" with count ${count}`);
+              const prods = await getCollectionProducts(handle, count);
+              console.log(`Collection "${handle}" returned ${prods.length} products`);
+              return { handle, products: prods };
+            }
+            return null;
+          });
+          const results = await Promise.all(fetchPromises);
+          if (!cancelled) {
+            const map: Record<string, Product[]> = {};
+            results.forEach(r => { if (r) map[r.handle] = r.products; });
+            console.log('Collection products map:', Object.fromEntries(Object.entries(map).map(([k, v]) => [k, v.length])));
+            setCollectionProducts(map);
+          }
         }
       } catch (error) {
-        console.error('Failed to load Shopify products:', error);
+        console.error('Failed to load Shopify data:', error);
       } finally {
         if (!cancelled) {
           await minLoading;
@@ -652,19 +679,29 @@ export default function HomePage() {
       }
     }
     
-    loadProducts();
+    loadData();
     return () => { cancelled = true; };
   }, []);
 
-  // Use local products immediately, Shopify products will overlay if loaded
   const products = shopifyProducts.length > 0 ? shopifyProducts : storeProducts;
+  const collections = shopifyCollections.length > 0 
+    ? shopifyCollections.map((c: any) => ({
+        id: c.id,
+        name: c.title,
+        slug: c.handle,
+        description: c.description || '',
+        image: c.image?.url || '',
+        productCount: 0,
+        featured: true,
+      }))
+    : [];
 
   const renderSection = (section: HomeSection) => {
     switch (section.type) {
       case 'hero':
         return <HeroSection key={section.id} config={section.config} />;
       case 'collections':
-        return <CollectionsSection key={section.id} title={section.title} collections={storeCollections} />;
+        return <CollectionsSection key={section.id} title={section.title} config={section.config} />;
       case 'featured_products':
         return (
           <ProductSlider
@@ -687,12 +724,29 @@ export default function HomePage() {
             count={(section.config.count as number) || 8}
           />
         );
+      case 'collection_products': {
+        const handle = section.config.collection as string;
+        const count = (section.config.count as number) || 8;
+        const sectionProducts = collectionProducts[handle] || products.slice(0, count);
+        return (
+          <ProductSlider
+            key={section.id}
+            title={section.title}
+            subtitle={section.subtitle}
+            items={sectionProducts}
+            actionLabel="View All"
+            count={count}
+          />
+        );
+      }
       case 'banner':
         return <BannerSection key={section.id} title={section.title} config={section.config} />;
       case 'testimonials':
-        return <TestimonialsSection key={section.id} title={section.title} />;
+        return <TestimonialsSection key={section.id} title={section.title} config={section.config} />;
       case 'newsletter':
         return <NewsletterSection key={section.id} title={section.title} subtitle={section.subtitle} />;
+      case 'size_guide':
+        return <SizeGuideSection key={section.id} title={section.title} config={section.config} />;
       default:
         return null;
     }
@@ -703,8 +757,6 @@ export default function HomePage() {
       {homeSections
         .filter((section) => section.enabled)
         .map((section) => renderSection(section))}
-      <BrandManifesto />
-      <InstagramFeed />
       <TrustBadges />
     </div>
   );

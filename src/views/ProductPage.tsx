@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, ShoppingBag, Minus, Plus, Star, ChevronRight, Truck, RotateCcw, Shield, Check, ArrowUp } from 'lucide-react';
+import { Heart, ShoppingBag, Minus, Plus, Star, ChevronRight, ChevronDown, ChevronUp, Truck, RotateCcw, Shield, Check, ArrowUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { navigate } from '@/lib/router';
@@ -33,6 +33,24 @@ function renderStars(rating: number, reviews: number) {
         ))}
       </div>
       <span className="text-[11px] text-[#6B6560] font-light font-sans">({reviews} reviews)</span>
+    </div>
+  );
+}
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-[#E8E4DF] rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+      >
+        <span className="text-[13px] font-medium text-[#1C1614]">{question}</span>
+        {open ? <ChevronUp size={14} className="text-[#6B6560] shrink-0 ml-2" /> : <ChevronDown size={14} className="text-[#6B6560] shrink-0 ml-2" />}
+      </button>
+      <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-40' : 'max-h-0'}`}>
+        <p className="px-4 pb-3.5 text-[12px] text-[#6B6560] leading-relaxed">{answer}</p>
+      </div>
     </div>
   );
 }
@@ -81,7 +99,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
     setMounted(true);
   }, []);
 
-  // Simple scroll listener instead of useScroll to avoid hydration issues
+  // Simple scroll listener - show sticky ATC when main ATC is visible, hide when it's in view
   useEffect(() => {
     if (!mounted) return;
     
@@ -89,7 +107,10 @@ export default function ProductPage({ productId }: ProductPageProps) {
       const mainATC = document.getElementById('main-atc');
       if (mainATC) {
         const rect = mainATC.getBoundingClientRect();
-        setShowStickyATC(rect.bottom < 0);
+        const windowHeight = window.innerHeight;
+        // Show sticky bar when main ATC is OUT of view (scrolled past it or above it)
+        // Hide sticky bar when main ATC is IN view
+        setShowStickyATC(rect.bottom > windowHeight || rect.top < 0);
       }
     };
 
@@ -114,13 +135,25 @@ export default function ProductPage({ productId }: ProductPageProps) {
     // Require size selection - only if more than One Size
     const hasMultipleSizes = availableSizes.length > 1 || (availableSizes[0] !== 'One Size' && availableSizes[0] !== undefined);
     if (hasMultipleSizes && !selectedSize) {
-      alert('Please select a size');
+      // Scroll to size selector
+      const sizeEl = document.getElementById('size-selector');
+      if (sizeEl) {
+        sizeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        sizeEl.classList.add('animate-pulse');
+        setTimeout(() => sizeEl.classList.remove('animate-pulse'), 2000);
+      }
       return;
     }
     
     // Require color selection if product has colors
     if (product.colors && product.colors.length > 0 && !selectedColor) {
-      alert('Please select a color');
+      // Scroll to color selector
+      const colorEl = document.getElementById('color-selector');
+      if (colorEl) {
+        colorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        colorEl.classList.add('animate-pulse');
+        setTimeout(() => colorEl.classList.remove('animate-pulse'), 2000);
+      }
       return;
     }
     
@@ -132,7 +165,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
     console.log('Using variantId:', variantId);
     
     // Use Shopify cart
-    addItem(product, quantity, selectedColor || product.colors?.[0]?.name || 'Default', variantId);
+    addItem(product, quantity, selectedColor || product.colors?.[0]?.name || 'Default', selectedSize, variantId);
     
     setIsAddingToCart(false);
   };
@@ -192,7 +225,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
               />
-              {product.badge && (
+              {product.badge && product.badge !== 'Flash Sale' && product.badge !== 'Sale' && (
                 <div className="absolute top-4 left-4">
                   <span className={cn(
                     product.badge.toLowerCase() === 'sale' ? 'badge-sale' :
@@ -297,7 +330,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
 
             {/* Color selector */}
             {product.colors.length > 0 && (
-              <div className="mt-6">
+              <div id="color-selector" className="mt-6">
                 <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#6B6560] mb-3 font-sans">
                   Color — <span className="text-[#1C1614]">{selectedColor}</span>
                 </p>
@@ -322,7 +355,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
 
             {/* Size selector */}
             {product.sizes.length > 0 && (
-              <div className="mt-5">
+              <div id="size-selector" className="mt-5">
                 <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#6B6560] mb-3 font-sans">
                   Size {product.sizes[0] !== 'One Size' ? '' : ''}
                 </p>
@@ -450,6 +483,40 @@ export default function ProductPage({ productId }: ProductPageProps) {
             </div>
           </motion.section>
         )}
+
+        {/* Size Guide */}
+        <section className="py-8 sm:py-10 lg:py-12 px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="section-heading">Size Guide</h2>
+          </div>
+          <div className="max-w-2xl mx-auto">
+            <Image
+              src="https://daneya.shop/cdn/shop/files/Chest_20251118_234817_0000.png?v=1763519409&width=600"
+              alt="Size Guide"
+              width={600}
+              height={800}
+              className="w-full h-auto"
+            />
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-8 sm:py-10 lg:py-12 px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto border-t border-[#E8E4DF]">
+          <div className="text-center mb-8">
+            <h2 className="section-heading">Frequently Asked Questions</h2>
+          </div>
+          <div className="max-w-2xl mx-auto space-y-3">
+            {[
+              { q: 'How long does delivery take?', a: 'We deliver across Egypt within 3-5 business days. Cairo and Giza orders may arrive within 2-3 days.' },
+              { q: 'What payment methods do you accept?', a: 'We accept Visa, Mastercard, Fawry, Vodafone Cash, Meeza, and Cash on Delivery.' },
+              { q: 'Can I exchange or return my order?', a: 'Yes! We offer 7-day returns for unworn items with tags attached. Contact us on WhatsApp to initiate a return.' },
+              { q: 'Do you offer free shipping?', a: 'Free shipping on all orders over EGP 2,000. Standard shipping is EGP 80.' },
+              { q: 'How do I know my size?', a: 'Check our size guide above. If you\'re between sizes, we recommend sizing up for a more comfortable fit.' },
+            ].map((faq, i) => (
+              <FAQItem key={i} question={faq.q} answer={faq.a} />
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* Sticky ATC Bar */}
@@ -460,7 +527,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
             animate={{ y: 0 }}
             exit={{ y: 100 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E8E4DF] shadow-lg lg:hidden safe-area-bottom"
+            className="fixed bottom-0 left-0 right-0 z-[51] bg-white border-t border-[#E8E4DF] shadow-lg lg:hidden safe-area-bottom"
           >
             <div className="flex items-center justify-between px-4 py-3 max-w-[1440px] mx-auto">
               <div className="flex items-center gap-3">

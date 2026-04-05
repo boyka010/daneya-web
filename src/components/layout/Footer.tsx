@@ -1,91 +1,113 @@
 'use client';
 
-import { Instagram, Facebook, Mail, Phone, MapPin, MessageCircle, Youtube } from 'lucide-react';
+import { useState } from 'react';
+import { Instagram, Facebook, ChevronDown } from 'lucide-react';
 import { navigate } from '@/lib/router';
 
-const footerLinks = {
-  shop: [
-    { label: 'New Arrivals', action: () => navigate({ type: 'shop' }) },
-    { label: 'Best Sellers', action: () => navigate({ type: 'shop', category: 'best-sellers' }) },
-    { label: 'Abayas', action: () => navigate({ type: 'shop', category: 'abayas' }) },
-    { label: 'Sets', action: () => navigate({ type: 'shop', category: 'sets' }) },
-  ],
-  help: [
-    { label: 'Shipping', action: () => navigate({ type: 'shipping' }) },
-    { label: 'Returns', action: () => navigate({ type: 'returns' }) },
-    { label: 'Size Guide', action: () => navigate({ type: 'size-guide' }) },
-    { label: 'FAQ', action: () => navigate({ type: 'faq' }) },
-  ],
-  company: [
-    { label: 'About Us', action: () => navigate({ type: 'about' }) },
-    { label: 'Contact', action: () => navigate({ type: 'contact' }) },
-  ],
-};
-
 export default function Footer() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+
   return (
     <footer className="bg-[#1C1614] text-white/80">
-      <div className="px-6 py-10 max-w-[1400px] mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <h3 className="text-xl font-serif text-white mb-4">DANEYA</h3>
-            <p className="text-xs text-white/40 mb-4 leading-relaxed">
-              Premium modest fashion from Egypt.
-            </p>
-            <div className="space-y-2 text-xs text-white/50">
-              <a href="https://wa.me/201XXXXXXXXX" className="flex items-center gap-2 hover:text-white">
-                <MessageCircle size={14} /> +20 1XX XXX XXXX
-              </a>
-              <a href="mailto:hello@daneya.com" className="flex items-center gap-2 hover:text-white">
-                <Mail size={14} /> hello@daneya.com
-              </a>
-              <div className="flex items-center gap-2">
-                <MapPin size={14} /> Cairo, Egypt
+      <div className="px-6 py-6 max-w-[1400px] mx-auto">
+        {/* Main Menu - collapsible */}
+        <div className="border-b border-white/10">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center justify-between w-full py-3 md:py-4"
+          >
+            <span className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-medium">Menu</span>
+            <ChevronDown size={14} className="text-white/30 transition-transform duration-300" style={{ transform: menuOpen ? 'rotate(180deg)' : '' }} />
+          </button>
+          <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: menuOpen ? '400px' : '0' }}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-4">
+              <div>
+                <h5 className="text-[9px] uppercase tracking-wider text-white/30 mb-2">Shop</h5>
+                <ul className="space-y-1.5">
+                  {['New Arrivals', 'Abayas', 'Dresses', 'Sets'].map((item) => (
+                    <li key={item}>
+                      <button onClick={() => navigate({ type: 'shop' })} className="text-xs text-white/50 hover:text-white transition-colors">
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h5 className="text-[9px] uppercase tracking-wider text-white/30 mb-2">Help</h5>
+                <ul className="space-y-1.5">
+                  {['Shipping', 'Returns', 'Size Guide', 'FAQ'].map((item) => (
+                    <li key={item}>
+                      <button onClick={() => navigate({ type: item.toLowerCase() as any })} className="text-xs text-white/50 hover:text-white transition-colors">
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h5 className="text-[9px] uppercase tracking-wider text-white/30 mb-2">Company</h5>
+                <ul className="space-y-1.5">
+                  {['About Us', 'Contact'].map((item) => (
+                    <li key={item}>
+                      <button onClick={() => navigate({ type: item.toLowerCase().replace(' ', '-') as any })} className="text-xs text-white/50 hover:text-white transition-colors">
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="md:hidden">
+                <h5 className="text-[9px] uppercase tracking-wider text-white/30 mb-2">Follow Us</h5>
+                <div className="flex items-center gap-3">
+                  <a href="https://instagram.com/daneya" className="w-8 h-8 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] transition-colors">
+                    <Instagram size={14} />
+                  </a>
+                  <a href="https://facebook.com/daneya" className="w-8 h-8 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] transition-colors">
+                    <Facebook size={14} />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Shop */}
-          <div>
-            <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-3">Shop</h4>
-            <ul className="space-y-2">
-              {footerLinks.shop.map((item) => (
-                <li key={item.label}>
-                  <button onClick={item.action} className="text-xs text-white/50 hover:text-white transition-colors">
-                    {item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Help */}
-          <div>
-            <h4 className="text-[10px] uppercase tracking-wider text-white/40 mb-3">Help</h4>
-            <ul className="space-y-2">
-              {footerLinks.help.map((item) => (
-                <li key={item.label}>
-                  <button onClick={item.action} className="text-xs text-white/50 hover:text-white transition-colors">
-                    {item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
+        {/* Info - collapsible */}
+        <div className="border-b border-white/10">
+          <button
+            onClick={() => setInfoOpen(!infoOpen)}
+            className="flex items-center justify-between w-full py-3 md:py-4"
+          >
+            <span className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-medium">Info</span>
+            <ChevronDown size={14} className="text-white/30 transition-transform duration-300" style={{ transform: infoOpen ? 'rotate(180deg)' : '' }} />
+          </button>
+          <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: infoOpen ? '200px' : '0' }}>
+            <div className="pb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1 text-xs text-white/50">
+                <p>+20 155 791 2688</p>
+                <p>hello@daneya.shop</p>
+              </div>
+              <div className="hidden md:flex items-center gap-3">
+                <a href="https://instagram.com/daneya" className="w-8 h-8 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] transition-colors">
+                  <Instagram size={14} />
+                </a>
+                <a href="https://facebook.com/daneya" className="w-8 h-8 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] transition-colors">
+                  <Facebook size={14} />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Social & Bottom */}
-        <div className="mt-10 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <a href="https://instagram.com/daneya" className="w-8 h-8 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] transition-colors">
-              <Instagram size={14} />
-            </a>
-            <a href="https://facebook.com/daneya" className="w-8 h-8 flex items-center justify-center border border-white/20 hover:border-[#C9A97A] transition-colors">
-              <Facebook size={14} />
-            </a>
+        {/* Copyright */}
+        <div className="pt-4 flex flex-col md:flex-row items-center justify-between gap-2">
+          <p className="text-[10px] text-white/30">© 2026 DANEYA</p>
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate({ type: 'shipping' })} className="text-[10px] text-white/30 hover:text-white/50 transition-colors">Shipping</button>
+            <button onClick={() => navigate({ type: 'returns' })} className="text-[10px] text-white/30 hover:text-white/50 transition-colors">Returns</button>
+            <button onClick={() => navigate({ type: 'faq' })} className="text-[10px] text-white/30 hover:text-white/50 transition-colors">FAQ</button>
           </div>
-          <p className="text-[10px] text-white/30">© 2026 DANEYA. All rights reserved.</p>
         </div>
       </div>
     </footer>

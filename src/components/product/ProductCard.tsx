@@ -9,6 +9,7 @@ import { useStore } from '@/store/useStore';
 import { useShopifyCart } from '@/hooks/useShopifyCart';
 import type { Product } from '@/data/products';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: Product;
@@ -68,8 +69,23 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
   const handleAddToCart = useCallback((e: React.MouseEvent, size?: string) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    const hasSizes = product.sizes && product.sizes.length > 0 && product.sizes[0] !== 'One Size';
+    const hasColors = product.colors && product.colors.length > 0;
+    const selectedColor = hoveredColor || product.colors[0]?.name || '';
+    
+    if (hasColors && !selectedColor) {
+      toast.error('Please select a color');
+      return;
+    }
+    
+    if (hasSizes && !size) {
+      toast.error('Please select a size');
+      return;
+    }
+    
     const variantId = product.variants?.[0]?.id || undefined;
-    addItem(product, 1, hoveredColor || product.colors[0]?.name || '', variantId);
+    addItem(product, 1, selectedColor, size, variantId);
   }, [product, hoveredColor, addItem]);
 
   const handleToggleWishlist = useCallback((e: React.MouseEvent) => {
@@ -120,8 +136,8 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
           priority={priority}
         />
 
-        {/* Badge */}
-        {product.badge && (
+        {/* Badge - only show New, Best Seller, Limited */}
+        {product.badge && product.badge !== 'Flash Sale' && product.badge !== 'Sale' && (
           <div className="absolute top-3 left-3 z-10">
             <span className={getBadgeClass(product.badge)}>
               {product.badge.toUpperCase()}
@@ -132,18 +148,14 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
         {/* Low Stock */}
         {isLowStock && (
           <div className="absolute top-3 right-3 z-10">
-            <span className="text-[8px] font-medium uppercase tracking-wider px-2 py-1 bg-[#C8102E] text-white">
-              Only {product.stock} left
-            </span>
+            <span className="badge badge-sale">Only {product.stock} left</span>
           </div>
         )}
 
         {/* Out of Stock Overlay */}
         {isOutOfStock && (
           <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
-            <span className="text-xs font-medium uppercase tracking-[0.15em] text-[#1C1614]">
-              Sold Out
-            </span>
+            <span className="text-caption text-[#1C1614]">Sold Out</span>
           </div>
         )}
 
@@ -226,51 +238,22 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
         </AnimatePresence>
       </div>
 
-      {/* Product Info - CLICK TO NAVIGATE */}
+      {/* Product Info */}
       <div
-        className="cursor-pointer"
+        className="cursor-pointer pt-3"
         onClick={handleNavigate}
       >
-        <h3 className="font-serif-heading text-[0.9375rem] font-normal text-[#1C1614] leading-snug truncate hover:text-[#C9A97A] transition-colors">
+        <h3 className="text-[11px] font-normal text-[#1C1614] leading-snug tracking-[0.01em] truncate hover:text-[#C9A97A] transition-colors duration-300">
           {product.name}
         </h3>
 
-        {/* Color swatches */}
-        {product.colors.length > 1 && (
-          <div className="flex items-center gap-2 mt-3">
-            {product.colors.slice(0, 5).map((color) => (
-              <button
-                key={color.name}
-                onMouseEnter={() => setHoveredColor(color.name)}
-                onMouseLeave={() => setHoveredColor(null)}
-                onClick={(e) => e.preventDefault()}
-                className={cn(
-                  'w-3.5 h-3.5 rounded-full border border-[#E8E4DF] inline-block transition-all',
-                  hoveredColor === color.name && 'ring-2 ring-[#C9A97A] ring-offset-1'
-                )}
-                style={{ backgroundColor: color.hex }}
-                title={color.name}
-              />
-            ))}
-            {product.colors.length > 5 && (
-              <span className="text-[9px] text-[#6B6560] ml-1">+{product.colors.length - 5}</span>
-            )}
-          </div>
-        )}
-
-        {/* Rating */}
-        <div className="flex items-center gap-2 mt-3">
-          {renderStars(product.rating)}
-          <span className="text-xs text-[#6B6560] font-light">({product.reviews})</span>
-        </div>
-
         {/* Price */}
-        <div className="flex items-center gap-3 mt-3">
-          <p className="text-base font-normal text-[#1C1614] font-sans">
+        <div className="flex items-center gap-2 mt-1.5">
+          <p className="text-[12px] font-medium text-[#1C1614]">
             EGP {product.price.toLocaleString('en-US')}
           </p>
           {product.originalPrice && (
-            <p className="text-sm text-[#6B6560] line-through font-light">
+            <p className="text-[11px] text-[#6B6560] line-through">
               EGP {product.originalPrice.toLocaleString('en-US')}
             </p>
           )}
@@ -281,7 +264,7 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
       <button
         onClick={(e) => handleAddToCart(e)}
         disabled={isOutOfStock || isPending}
-        className="mt-4 w-full py-3 text-xs uppercase tracking-[0.15em] text-[#1C1614] border border-[#E8E4DF] hover:bg-[#1C1614] hover:text-white hover:border-[#1C1614] transition-all duration-300 lg:hidden font-sans disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-3 w-full py-2.5 text-caption text-[#1C1614] border border-[#E8E4DF] hover:bg-[#1C1614] hover:text-white hover:border-[#1C1614] transition-all duration-300 lg:hidden disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isOutOfStock ? 'Sold Out' : isPending ? 'Adding...' : 'Add to Bag'}
       </button>

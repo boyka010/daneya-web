@@ -76,7 +76,7 @@ export default function CartRecommendations({ isOpen, onClose }: CartRecommendat
             >
               <div className="relative aspect-[3/4] bg-[#FAF7F4] mb-2 overflow-hidden">
                 <img
-                  src={product.image || fallbackImage}
+                  src={product.image && typeof product.image === 'string' && product.image.trim() ? product.image : fallbackImage}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />

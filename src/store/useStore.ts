@@ -9,6 +9,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   selectedColor: string;
+  selectedSize?: string;
 }
 
 export interface ShippingInfo {
@@ -94,7 +95,17 @@ export type SectionType =
   | "new_arrivals"
   | "banner"
   | "testimonials"
-  | "newsletter";
+  | "newsletter"
+  | "product_grid"
+  | "instagram_feed"
+  | "brand_manifesto"
+  | "custom_html"
+  | "size_guide"
+  | "collection_products";
+
+export interface SectionConfig {
+  [key: string]: string | number | boolean;
+}
 
 export interface HomeSection {
   id: string;
@@ -102,8 +113,241 @@ export interface HomeSection {
   enabled: boolean;
   title: string;
   subtitle?: string;
-  config: Record<string, string | number | boolean>;
+  config: SectionConfig;
 }
+
+// ── Full Site Configuration ──
+export interface SiteConfig {
+  // Store Info
+  storeName: string;
+  storeTagline: string;
+  storeEmail: string;
+  storePhone: string;
+  storeAddress: string;
+  storeLogo: string;
+  storeFavicon: string;
+  
+  // Header Settings
+  headerTransparent: boolean;
+  headerSticky: boolean;
+  headerShowSearch: boolean;
+  headerShowWishlist: boolean;
+  headerShowAccount: boolean;
+  headerMenu: { label: string; link: string }[];
+  
+  // Footer Settings
+  footerShowNewsletter: boolean;
+  footerShowSocial: boolean;
+  footerShowLinks: boolean;
+  footerShowContact: boolean;
+  footerCopyright: string;
+  footerSocialLinks: { platform: string; url: string }[];
+  footerQuickLinks: { label: string; url: string }[];
+  
+  // Colors
+  colors: {
+    primary: string;
+    primaryHover: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    backgroundAlt: string;
+    text: string;
+    textMuted: string;
+    border: string;
+    success: string;
+    error: string;
+  };
+  
+  // Typography
+  typography: {
+    headingFont: string;
+    bodyFont: string;
+    headingWeight: string;
+    bodyWeight: string;
+    headingCase: string;
+    baseFontSize: string;
+  };
+  
+  // Layout
+  layout: {
+    containerMaxWidth: string;
+    productGridColumns: number;
+    productsPerPage: number;
+  };
+  
+  // Shipping & Returns
+  shippingInfo: string;
+  returnsInfo: string;
+  
+  // Announcement Bar
+  announcementEnabled: boolean;
+  announcementText: string;
+  announcementLink: string;
+  announcementBgColor: string;
+  announcementTextColor: string;
+}
+
+export const defaultSiteConfig: SiteConfig = {
+  storeName: "Daneya",
+  storeTagline: "Timeless Feminine Luxury",
+  storeEmail: "hello@daneya.shop",
+  storePhone: "+20 155 791 2688",
+  storeAddress: "Cairo, Egypt",
+  storeLogo: "/images/logo.png",
+  storeFavicon: "/images/logo.png",
+  
+  headerTransparent: false,
+  headerSticky: true,
+  headerShowSearch: true,
+  headerShowWishlist: true,
+  headerShowAccount: true,
+  headerMenu: [
+    { label: "Shop", link: "/shop" },
+    { label: "About", link: "/about" },
+    { label: "Contact", link: "/contact" },
+  ],
+  
+  footerShowNewsletter: true,
+  footerShowSocial: true,
+  footerShowLinks: true,
+  footerShowContact: true,
+  footerCopyright: "© 2025 Daneya. All rights reserved.",
+  footerSocialLinks: [
+    { platform: "instagram", url: "https://instagram.com/daneya" },
+    { platform: "facebook", url: "https://facebook.com/daneya" },
+  ],
+  footerQuickLinks: [
+    { label: "Shipping", url: "/shipping" },
+    { label: "Returns", url: "/returns" },
+    { label: "FAQ", url: "/faq" },
+    { label: "Contact", url: "/contact" },
+  ],
+  
+  colors: {
+    primary: "#1C1614",
+    primaryHover: "#C9A97A",
+    secondary: "#FAF7F4",
+    accent: "#C9A97A",
+    background: "#FAF7F4",
+    backgroundAlt: "#FFFFFF",
+    text: "#1C1614",
+    textMuted: "#6B6560",
+    border: "#E8E4DF",
+    success: "#6B7F3B",
+    error: "#C8102E",
+  },
+  
+  typography: {
+    headingFont: "Playfair Display",
+    bodyFont: "Inter",
+    headingWeight: "500",
+    bodyWeight: "400",
+    headingCase: "none",
+    baseFontSize: "16px",
+  },
+  
+  layout: {
+    containerMaxWidth: "1440px",
+    productGridColumns: 4,
+    productsPerPage: 12,
+  },
+  
+  shippingInfo: "Free shipping on orders over EGP 2,000. Standard delivery takes 3-5 business days.",
+  returnsInfo: "We offer 7-day returns for unworn items with tags attached. Contact us to initiate a return.",
+  
+  announcementEnabled: true,
+  announcementText: "Get 15% off your first order with code FIRST15",
+  announcementLink: "/shop",
+  announcementBgColor: "#1C1614",
+  announcementTextColor: "#FFFFFF",
+};
+
+export const sectionTypeConfig: Record<SectionType, { label: string; description: string; defaultConfig: SectionConfig }> = {
+  hero: { 
+    label: 'Hero Banner', 
+    description: 'Full-width hero slideshow with CTA', 
+    defaultConfig: { 
+      autoplay: true, 
+      interval: 7,
+      slides: JSON.stringify([
+        { image: '/images/hero/hero-1.png', overline: 'NEW COLLECTION', title: 'Eid Al-Fitr Edit', subtitle: 'Discover the new modest luxury collection', cta: 'Shop Collection', link: '/shop' },
+        { image: '/images/hero/hero-2.png', overline: 'JUST ARRIVED', title: 'The Art of Simplicity', subtitle: 'Where contemporary elegance meets timeless modesty', cta: 'Explore Now', link: '/shop' },
+        { image: '/images/hero/hero-3.png', overline: 'EXCLUSIVE', title: 'Quiet Luxury', subtitle: 'Crafted for the modern woman who values distinction', cta: 'Discover', link: '/shop' },
+      ]),
+    } 
+  },
+  collections: { 
+    label: 'Collections', 
+    description: 'Shop by collection grid', 
+    defaultConfig: { layout: 'circles', showAll: true } 
+  },
+  featured_products: { 
+    label: 'Featured Products', 
+    description: 'Curated best sellers', 
+    defaultConfig: { count: 8 } 
+  },
+  new_arrivals: { 
+    label: 'New Arrivals', 
+    description: 'Latest product drops', 
+    defaultConfig: { count: 4 } 
+  },
+  banner: { 
+    label: 'Promo Banner', 
+    description: 'Mid-page promotional banner (desktop + mobile images)', 
+    defaultConfig: { 
+      imageDesktop: '/images/hero/hero-2.png', 
+      imageMobile: '/images/hero/hero-2.png',
+    } 
+  },
+  testimonials: { 
+    label: 'Testimonials', 
+    description: 'Customer reviews', 
+    defaultConfig: { 
+      testimonials: JSON.stringify([
+        { name: 'Nour E.', location: 'Cairo, Egypt', avatar: '', rating: 5, text: 'The quality is amazing — the fabric feels so premium and the fit is perfect for everyday wear.', product: 'Aura Oversized Abaya Set', verified: true },
+        { name: 'Menna A.', location: 'Alexandria, Egypt', avatar: '', rating: 5, text: 'Finally found a brand that gets modest fashion right. The Ripple Set is my go-to now.', product: 'Ripple Oversized Set', verified: true },
+        { name: 'Sara M.', location: 'Giza, Egypt', avatar: '', rating: 5, text: 'I was hesitant to order online but the quality exceeded my expectations.', product: 'Daneya Oversized Abaya', verified: true },
+        { name: 'Hana K.', location: 'Mansoura, Egypt', avatar: '', rating: 4, text: 'Beautiful pieces and great customer service. The packaging was lovely.', product: 'Essentials Abaya', verified: true },
+      ]),
+    } 
+  },
+  newsletter: { 
+    label: 'Newsletter', 
+    description: 'Email signup form', 
+    defaultConfig: {} 
+  },
+  product_grid: { 
+    label: 'Product Grid', 
+    description: 'Custom product grid section', 
+    defaultConfig: { category: 'all', count: 8 } 
+  },
+  instagram_feed: { 
+    label: 'Instagram Feed', 
+    description: 'Social media feed', 
+    defaultConfig: { username: 'daneya', count: 8 } 
+  },
+  brand_manifesto: { 
+    label: 'Brand Manifesto', 
+    description: 'Brand story section', 
+    defaultConfig: {} 
+  },
+  custom_html: { 
+    label: 'Custom HTML', 
+    description: 'Custom code section', 
+    defaultConfig: { html: '<p>Add your custom content here</p>' } 
+  },
+  size_guide: { 
+    label: 'Size Guide', 
+    description: 'Size chart image', 
+    defaultConfig: { image: 'https://daneya.shop/cdn/shop/files/Chest_20251118_234817_0000.png?v=1763519409&width=600' } 
+  },
+  collection_products: { 
+    label: 'Collection Products', 
+    description: 'Products from a specific Shopify collection', 
+    defaultConfig: { collection: '', count: 8 } 
+  },
+};
 
 export const defaultSections: HomeSection[] = [
   {
@@ -111,53 +355,72 @@ export const defaultSections: HomeSection[] = [
     type: "hero",
     enabled: true,
     title: "Redefine Your Style",
-    config: { autoplay: true, interval: 7 },
+    config: { 
+      autoplay: true, 
+      interval: 7,
+      slides: JSON.stringify([
+        { image: '/images/hero/hero-1.png', overline: '', title: 'Eid Al-Fitr Edit', subtitle: '', cta: 'Shop Collection', link: '/shop' },
+        { image: '/images/hero/hero-2.png', overline: '', title: 'The Art of Simplicity', subtitle: '', cta: 'Explore Now', link: '/shop' },
+        { image: '/images/hero/hero-3.png', overline: '', title: 'Quiet Luxury', subtitle: '', cta: 'Discover', link: '/shop' },
+      ]),
+    },
   },
   {
     id: "sec-2",
-    type: "collections",
+    type: "new_arrivals",
     enabled: true,
-    title: "Shop by Collection",
-    subtitle: "Curated collections for every occasion",
-    config: { layout: "circles", showAll: true },
+    title: "New Arrivals",
+    subtitle: "",
+    config: { count: 8 },
   },
   {
     id: "sec-3",
     type: "featured_products",
     enabled: true,
     title: "Best Sellers",
-    subtitle: "Most loved by our community",
+    subtitle: "",
     config: { count: 8 },
   },
   {
     id: "sec-4",
-    type: "banner",
+    type: "collection_products",
     enabled: true,
-    title: "Be Bold. Be DANEYA.",
-    config: { image: "/images/hero/hero-2.png", dark: true },
+    title: "Abayas",
+    subtitle: "",
+    config: { collection: "abaya", count: 12 },
   },
   {
     id: "sec-5",
-    type: "new_arrivals",
+    type: "collection_products",
     enabled: true,
-    title: "New Arrivals",
-    subtitle: "Fresh drops you need to see",
-    config: { count: 4 },
+    title: "Capes",
+    subtitle: "",
+    config: { collection: "capes", count: 20 },
   },
   {
     id: "sec-6",
-    type: "testimonials",
+    type: "collections",
     enabled: true,
-    title: "What Our Customers Say",
-    config: {},
+    title: "Shop by Collection",
+    subtitle: "",
+    config: { 
+      layout: "circles", 
+      showAll: true,
+      collections: JSON.stringify([
+        { name: 'Abayas', slug: 'abaya', image: '/images/categories/cat-everyday.png' },
+        { name: 'Capes', slug: 'capes', image: '/images/categories/cat-limited.png' },
+        { name: 'Sets', slug: 'sets', image: '/images/categories/cat-silk.png' },
+        { name: 'Jenz', slug: 'jenz', image: '/images/categories/cat-chiffon.png' },
+      ]),
+    },
   },
   {
     id: "sec-7",
-    type: "newsletter",
+    type: "size_guide",
     enabled: true,
-    title: "Join the DANEYA Family",
-    subtitle: "Get 15% off your first order + early access to new drops",
-    config: {},
+    title: "Size Guide",
+    subtitle: "",
+    config: { image: "https://daneya.shop/cdn/shop/files/Chest_20251118_234817_0000.png?v=1763519409&width=600" },
   },
 ];
 
@@ -459,6 +722,12 @@ interface StoreState {
   reorderSections: (activeId: string, overId: string) => void;
   toggleSection: (sectionId: string) => void;
   updateSection: (sectionId: string, updates: Partial<HomeSection>) => void;
+  addSection: (type: SectionType) => void;
+  deleteSection: (sectionId: string) => void;
+
+  // Site Configuration
+  siteConfig: SiteConfig;
+  updateSiteConfig: (updates: Partial<SiteConfig>) => void;
 
   // Theme
   activeTheme: ThemePreset;
@@ -705,6 +974,28 @@ export const useStore = create<StoreState>()(
         );
         set({ homeSections: sections });
       },
+      addSection: (type: SectionType) => {
+        const id = `sec-${Date.now()}`;
+        const config = sectionTypeConfig[type]?.defaultConfig || {};
+        const newSection: HomeSection = {
+          id,
+          type,
+          enabled: true,
+          title: sectionTypeConfig[type]?.label || 'New Section',
+          config,
+        };
+        set({ homeSections: [...get().homeSections, newSection] });
+      },
+      deleteSection: (sectionId: string) => {
+        const sections = get().homeSections.filter((s) => s.id !== sectionId);
+        set({ homeSections: sections });
+      },
+
+      // Site Configuration
+      siteConfig: defaultSiteConfig,
+      updateSiteConfig: (updates: Partial<SiteConfig>) => {
+        set({ siteConfig: { ...get().siteConfig, ...updates } });
+      },
 
       // Theme
       activeTheme: themePresets[0],
@@ -714,7 +1005,7 @@ export const useStore = create<StoreState>()(
       },
     }),
     {
-      name: "daneya-store-v1",
+      name: "daneya-store-v13",
       /**
        * SECURITY FIX (C1/M1): Only persist non-sensitive data to localStorage.
        * paymentInfo, shippingInfo, and orders (which contain customer PII) are
@@ -730,6 +1021,7 @@ export const useStore = create<StoreState>()(
         homeSections: state.homeSections,
         activeTheme: state.activeTheme,
         adminOrders: state.adminOrders,
+        siteConfig: state.siteConfig,
       }),
     }
   )

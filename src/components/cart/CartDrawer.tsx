@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingBag, ArrowRight } from 'lucide-react';
+import { X, ShoppingBag, ArrowRight, Star } from 'lucide-react';
 import { navigate } from '@/lib/router';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
+import { products as localProducts } from '@/data/products';
 import CartItem from './CartItem';
 import CartRecommendations from './CartRecommendations';
 
@@ -29,9 +31,28 @@ export default function CartDrawer() {
   }, [isOpen, itemCount]);
   
   const handleCheckout = () => {
-    setOpen(false);
-    // Navigate to internal cart page - Shopify sync has issues
-    navigate({ type: 'cart' });
+    console.log('CartDrawer handleCheckout', { itemCount, checkoutUrl: cart?.checkoutUrl });
+    
+    const hasValidShopifyUrl = cart?.checkoutUrl && cart.checkoutUrl.includes('/cart/');
+    
+    if (hasValidShopifyUrl) {
+      console.log('Going to Shopify:', cart.checkoutUrl);
+      setOpen(false);
+      window.location.href = cart.checkoutUrl;
+      return;
+    }
+    
+    if (itemCount > 0) {
+      console.log('Going to internal checkout');
+      setOpen(false);
+      setTimeout(() => {
+        window.location.hash = '#/checkout';
+      }, 100);
+    } else {
+      console.log('Cart empty');
+      setOpen(false);
+      window.location.hash = '#/cart';
+    }
   };
 
   return (
@@ -69,7 +90,7 @@ export default function CartDrawer() {
 
             <div className="flex-1 overflow-y-auto custom-scroll px-6 py-2">
               {itemCount === 0 ? (
-                <div className="py-20 text-center">
+                <div className="py-12 text-center">
                   <div className="w-14 h-14 mx-auto mb-5 flex items-center justify-center border border-[#E8E4DF]">
                     <ShoppingBag size={22} strokeWidth={1} className="text-[#6B6560]" />
                   </div>
@@ -86,15 +107,50 @@ export default function CartDrawer() {
                     Continue Shopping
                     <ArrowRight size={12} strokeWidth={1.5} />
                   </button>
+
+                  {/* Trending products - never show empty cart */}
+                  <div className="mt-8 pt-6 border-t border-[#E8E4DF]">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#6B6560] mb-4">Trending Now</p>
+                    <div className="space-y-3">
+                      {localProducts.slice(0, 3).map((product) => (
+                        <button
+                          key={product.id}
+                          onClick={() => { setOpen(false); navigate({ type: 'product', id: product.id }); }}
+                          className="flex items-center gap-3 w-full text-left hover:bg-[#FAF7F4] p-2 rounded transition-colors"
+                        >
+                          <div className="w-12 h-16 bg-[#F5F2EE] overflow-hidden shrink-0">
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              width={48}
+                              height={64}
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-medium text-[#1C1614] truncate">{product.name}</p>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              {[1,2,3,4,5].map(s => (
+                                <Star key={s} size={8} className={s <= Math.round(product.rating) ? 'fill-[#C9A97A] text-[#C9A97A]' : 'text-[#E8E4DF]'} />
+                              ))}
+                              <span className="text-[9px] text-[#6B6560] ml-1">({product.reviews})</span>
+                            </div>
+                            <p className="text-[11px] text-[#1C1614] mt-0.5">EGP {product.price.toLocaleString('en-US')}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="divide-y divide-[#E8E4DF]/60">
                   {items.map((item) => (
                     <CartItem
-                      key={`${item.product.id}-${item.selectedColor}`}
+                      key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}`}
                       mode="compact"
                       productId={item.product.id}
                       color={item.selectedColor}
+                      size={item.selectedSize}
                     />
                   ))}
                 </div>

@@ -1,40 +1,49 @@
 'use client';
 
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShoppingBag, ArrowRight } from 'lucide-react';
-import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { navigate } from '@/lib/router';
 import CartItem from '@/components/cart/CartItem';
 
 export default function CartPage() {
-  const cartItems = useStore((s) => s.cartItems);
-  const getCartTotal = useStore((s) => s.getCartTotal);
-  const clearCart = useStore((s) => s.clearCart);
-  const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen);
-  const shopifyCart = useShopifyStore((s) => s.cart);
+  const cart = useShopifyStore((s) => s.cart);
+  const clearCart = useShopifyStore((s) => s.clearCart);
+  const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   
-  // Debug
-  useEffect(() => {
-    console.log('CartPage - shopifyCart:', shopifyCart);
-    console.log('CartPage - checkoutUrl:', shopifyCart?.checkoutUrl);
-  }, [shopifyCart]);
-  
-  const subtotal = shopifyCart?.subtotal || getCartTotal();
+  const items = cart?.lines || [];
+  const subtotal = cart?.subtotal || 0;
   const shipping = subtotal >= 2000 ? 0 : 80;
   const total = subtotal + shipping;
   
-  const handleCheckout = () => {
-    console.log('CartPage checkout clicked, cart:', shopifyCart);
-    if (shopifyCart?.checkoutUrl) {
-      window.location.href = shopifyCart.checkoutUrl;
+  // Debug logging
+  console.log('CartPage:', { itemsCount: items.length, subtotal, cartId: cart?.id, checkoutUrl: cart?.checkoutUrl });
+  
+  const handleCheckout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('handleCheckout called', { items: items.length, checkoutUrl: cart?.checkoutUrl });
+    
+    if (!items.length) {
+      console.log('No items - going to shop');
+      window.location.hash = '#/shop';
+      return;
+    }
+    
+    const hasValidShopifyUrl = cart?.checkoutUrl && cart.checkoutUrl.includes('/cart/');
+    console.log('hasValidShopifyUrl:', hasValidShopifyUrl);
+    
+    if (hasValidShopifyUrl) {
+      console.log('Going to Shopify:', cart.checkoutUrl);
+      window.location.href = cart.checkoutUrl;
     } else {
-      navigate({ type: 'checkout' });
+      console.log('Going to internal checkout');
+      window.location.hash = '#/checkout';
     }
   };
 
-  if (cartItems.length === 0 && !shopifyCart?.lines?.length) {
+  if (items.length === 0) {
     return (
       <div className="min-h-screen bg-[#FAF7F4] flex items-center justify-center px-4">
         <div className="text-center">
@@ -96,12 +105,13 @@ export default function CartPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4 }}
             >
-              {cartItems.map((item) => (
+              {items.map((item) => (
                 <CartItem
-                  key={`${item.product.id}-${item.selectedColor}`}
+                  key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}`}
                   mode="full"
                   productId={item.product.id}
                   color={item.selectedColor}
+                  size={item.selectedSize}
                 />
               ))}
             </motion.div>
@@ -166,13 +176,12 @@ export default function CartPage() {
                 </button>
               </div>
 
-              <motion.button
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={handleCheckout}
                 className="w-full py-4 bg-[#1C1614] text-[#FAF7F4] text-[10px] font-medium uppercase tracking-[0.12em] hover:bg-[#C9A97A] transition-colors duration-300 font-sans"
               >
                 Proceed to Checkout
-              </motion.button>
+              </button>
 
               <p className="text-[9px] text-muted-foreground text-center mt-3 font-light font-sans">
                 Your information is encrypted and secure

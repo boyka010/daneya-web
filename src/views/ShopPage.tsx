@@ -4,11 +4,12 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal, Grid3X3, Grid2X2, X, ChevronDown, Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { navigate } from '@/lib/router';
 import { products as localProducts } from '@/data/products';
 import { categories } from '@/data/categories';
 import ProductCard from '@/components/product/ProductCard';
 import { cn } from '@/lib/utils';
-import { getShopifyProducts } from '@/lib/shopify-queries';
+import { getShopifyProducts, getShopifyCollections, getCollectionProducts } from '@/lib/shopify-queries';
 import type { Product } from '@/data/products';
 
 const ITEMS_PER_PAGE = 12;
@@ -52,6 +53,8 @@ export default function ShopPage() {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
+  const [shopifyCollections, setShopifyCollections] = useState<any[]>([]);
+  const [collectionProducts, setCollectionProducts] = useState<Record<string, Product[]>>({});
   const [isLoadingShopify, setIsLoadingShopify] = useState(true);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -65,10 +68,28 @@ export default function ShopPage() {
       
       try {
         console.log('Fetching Shopify products...');
-        const products = await getShopifyProducts();
+        const [products, collections] = await Promise.all([
+          getShopifyProducts(),
+          getShopifyCollections(),
+        ]);
         console.log('Shopify products response:', products);
         if (!cancelled) {
           setShopifyProducts(products);
+          setShopifyCollections(collections || []);
+
+          // Fetch products for each collection
+          if (collections && collections.length > 0) {
+            const colPromises = collections.map(async (col: any) => {
+              const prods = await getCollectionProducts(col.handle, 50);
+              return { handle: col.handle, products: prods };
+            });
+            const colResults = await Promise.all(colPromises);
+            if (!cancelled) {
+              const map: Record<string, Product[]> = {};
+              colResults.forEach(r => { if (r) map[r.handle] = r.products; });
+              setCollectionProducts(map);
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to load Shopify products:', error);
@@ -84,8 +105,10 @@ export default function ShopPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Use Shopify products if available, otherwise fallback to local
-  const products = shopifyProducts.length > 0 ? shopifyProducts : localProducts;
+  // Use collection products if a specific collection is selected, otherwise use all products
+  const products = activeCategory !== 'all' && collectionProducts[activeCategory]
+    ? collectionProducts[activeCategory]
+    : (shopifyProducts.length > 0 ? shopifyProducts : localProducts);
   console.log('Using products, shopify count:', shopifyProducts.length, 'local count:', localProducts.length);
 
   // Force re-render when category changes
@@ -94,7 +117,15 @@ export default function ShopPage() {
   const filteredProducts = useMemo(() => {
     let items = activeCategory === 'all'
       ? [...products]
-      : products.filter(p => p.category === activeCategory);
+      : products.filter(p => {
+          // Match by category (productType)
+          if (p.category === activeCategory) return true;
+          // Match by tags (Shopify collection tags)
+          if (p.tags && p.tags.some((t: string) => t.toLowerCase() === activeCategory)) return true;
+          // Match by name contains (fallback)
+          if (p.name.toLowerCase().includes(activeCategory)) return true;
+          return false;
+        });
 
     // Also filter by selected colors from sidebar
     if (selectedColors.length > 0) {
@@ -272,31 +303,31 @@ export default function ShopPage() {
           className="max-w-[1440px] mx-auto flex items-center gap-4 overflow-x-auto no-scrollbar py-0 snap-x snap-mandatory touch-pan-x"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <button
-            type="button"
-            onClick={() => setActiveCategory('all')}
-            className={cn(
-              'flex-shrink-0 py-3 px-2 text-[11px] font-medium uppercase tracking-[0.12em] border-b-2 transition-colors font-sans snap-start',
-              activeCategory === 'all'
-                ? 'text-[#1C1614] border-[#1C1614]'
-                : 'text-[#6B6560] border-transparent hover:text-[#1C1614]'
-            )}
-          >
-            All
-          </button>
-          {categories.map(cat => (
+          {[
+            { label: 'All', handle: 'all' },
+            { label: 'New Arrivals', handle: 'all' },
+            { label: 'Abaya', handle: 'abaya' },
+            { label: 'Capes', handle: 'capes' },
+          ].map((cat) => (
             <button
-              key={cat.slug}
+              key={cat.handle + cat.label}
               type="button"
-              onClick={() => setActiveCategory(cat.slug)}
+              onClick={() => {
+                setActiveCategory(cat.handle === 'all' ? 'all' : cat.handle);
+                if (cat.handle === 'all') {
+                  navigate({ type: 'shop' });
+                } else {
+                  navigate({ type: 'shop', category: cat.handle });
+                }
+              }}
               className={cn(
                 'flex-shrink-0 py-3 px-2 text-[11px] font-medium uppercase tracking-[0.12em] border-b-2 transition-colors font-sans snap-start',
-                activeCategory === cat.slug
+                activeCategory === cat.handle
                   ? 'text-[#1C1614] border-[#1C1614]'
                   : 'text-[#6B6560] border-transparent hover:text-[#1C1614]'
               )}
             >
-              {cat.name}
+              {cat.label}
             </button>
           ))}
         </div>

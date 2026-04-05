@@ -168,36 +168,26 @@ export default function Navbar() {
         className={cn(
           'sticky top-0 inset-x-0 z-50 transition-all duration-500',
           scrolled || !isHomePage
-            ? 'bg-[#FAF7F4]/95 glass border-b border-[#E8E4DF]'
-            : 'bg-transparent border-b border-transparent'
+            ? 'bg-[#FAF7F4]/95 backdrop-blur-md border-b border-[#E8E4DF]'
+            : 'bg-transparent border-b border-white/10'
         )}
       >
-        <nav className="flex items-center justify-between h-16 sm:h-[72px] px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">
-          {/* Left — Social Icons + Hamburger */}
-          <div className="flex items-center gap-4">
-            {/* Social icons — hidden on mobile */}
-            <div className="hidden lg:flex items-center gap-3">
-              <a href="#" className="text-[#1C1614]/50 hover:text-[#C9A97A] transition-colors duration-300" aria-label="Instagram">
-                <Instagram size={14} strokeWidth={1.5} />
-              </a>
-              <a href="#" className="text-[#1C1614]/50 hover:text-[#C9A97A] transition-colors duration-300" aria-label="Facebook">
-                <Facebook size={14} strokeWidth={1.5} />
-              </a>
-            </div>
-
+        <nav className="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto">
+          {/* Left — Hamburger + Nav Links */}
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Hamburger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-1.5 -ml-1.5 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
+              className="lg:hidden p-1 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
               aria-label="Open menu"
             >
-              <Menu size={20} strokeWidth={1.5} />
+              <Menu size={18} strokeWidth={1.5} />
             </button>
 
-            {/* Desktop nav links with Mega Menu */}
+            {/* Desktop nav links */}
             <div 
               className={cn(
-                'hidden lg:flex items-center gap-7 transition-all duration-500',
+                'hidden lg:flex items-center gap-6 transition-all duration-500',
                 isHomePage && !scrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'
               )}
               ref={megaMenuRef}
@@ -209,13 +199,13 @@ export default function Navbar() {
                       onClick={() => setActiveMegaMenu(activeMegaMenu === link.label ? null : link.label)}
                       onMouseEnter={() => setActiveMegaMenu(link.label)}
                       className={cn(
-                        'nav-link flex items-center gap-1 text-[#1C1614]',
-                        activeMegaMenu === link.label && 'active'
+                        'text-[10px] font-medium uppercase tracking-[0.15em] text-[#1C1614] hover:text-[#C9A97A] transition-colors flex items-center gap-1',
+                        activeMegaMenu === link.label && 'text-[#C9A97A]'
                       )}
                     >
                       {locale === 'ar' ? link.labelAr : link.label}
                       <ChevronDown 
-                        size={12} 
+                        size={10} 
                         strokeWidth={1.5}
                         className={cn(
                           'transition-transform duration-200',
@@ -229,7 +219,7 @@ export default function Navbar() {
                         setMobileMenuOpen(false);
                         navigate({ type: link.href?.includes('about') ? 'about' : 'shop' });
                       }}
-                      className="nav-link text-[#1C1614]"
+                      className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#1C1614] hover:text-[#C9A97A] transition-colors"
                     >
                       {locale === 'ar' ? link.labelAr : link.label}
                     </button>
@@ -242,55 +232,50 @@ export default function Navbar() {
           {/* Center — Logo */}
           <button
             onClick={() => navigate({ type: 'home' })}
-            className="absolute left-1/2 -translate-x-1/2 font-serif-heading text-2xl sm:text-3xl font-normal tracking-[0.15em] text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-500"
+            className="absolute left-1/2 -translate-x-1/2 font-serif text-lg sm:text-xl tracking-[0.12em] text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-500"
           >
             DANEYA
           </button>
 
           {/* Right — Icons */}
-          <div className="flex items-center gap-0.5 sm:gap-1">
+          <div className="flex items-center gap-0.5">
             {/* Language Toggle */}
             <button
               onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
-              className="hidden sm:flex items-center gap-1 p-2 text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-300"
+              className="hidden sm:flex items-center gap-1 px-2 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
               aria-label="Change language"
             >
-              <Globe size={16} strokeWidth={1.5} />
-              <span className="text-[10px] font-medium uppercase tracking-wider">{locale}</span>
+              <Globe size={14} strokeWidth={1.5} />
+              <span className="text-[9px] font-medium uppercase tracking-wider">{locale}</span>
             </button>
 
             <button
               onClick={() => setSearchOpen(!isSearchOpen)}
-              className={cn(
-                'relative p-2 transition-colors duration-300',
-                scrolled || !isHomePage
-                  ? 'text-[#1C1614] hover:text-[#C9A97A]'
-                  : 'text-[#1C1614] hover:text-[#C9A97A]'
-              )}
+              className="relative p-1.5 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
               aria-label="Search"
             >
-              <Search size={18} strokeWidth={1.5} />
+              <Search size={16} strokeWidth={1.5} />
             </button>
             <button
               onClick={() => navigate({ type: 'wishlist' })}
-              className="relative p-2 text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-300"
+              className="relative p-1.5 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
               aria-label="Wishlist"
             >
-              <Heart size={18} strokeWidth={1.5} />
+              <Heart size={16} strokeWidth={1.5} />
               {wishCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center text-[8px] bg-[#C9A97A] text-white font-medium font-sans">
+                <span className="absolute -top-0 -right-0 w-3.5 h-3.5 flex items-center justify-center text-[7px] bg-[#C9A97A] text-white font-medium">
                   {wishCount}
                 </span>
               )}
             </button>
             <button
               onClick={() => setCartDrawerOpen(true)}
-              className="relative p-2 text-[#1C1614] hover:text-[#C9A97A] transition-colors duration-300"
+              className="relative p-1.5 text-[#1C1614] hover:text-[#C9A97A] transition-colors"
               aria-label="Bag"
             >
-              <ShoppingBag size={18} strokeWidth={1.5} />
+              <ShoppingBag size={16} strokeWidth={1.5} />
               {mounted && cartCount > 0 && (
-                <span suppressHydrationWarning className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center text-[8px] bg-[#C9A97A] text-white font-medium font-sans">
+                <span suppressHydrationWarning className="absolute -top-0 -right-0 w-3.5 h-3.5 flex items-center justify-center text-[7px] bg-[#C9A97A] text-white font-medium">
                   {cartCount}
                 </span>
               )}

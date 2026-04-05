@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Check, CreditCard, Truck, Wallet, ChevronRight, Shield, Lock } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { navigate } from '@/lib/router';
 import { sanitizeInput, sanitizeEmail, sanitizePhone, sanitizeZip, validateRequired } from '@/lib/security';
 
 export default function CheckoutPage() {
-  const cartItems = useStore((s) => s.cartItems);
+  const shopifyCart = useShopifyStore((s) => s.cart);
+  const legacyCartItems = useStore((s) => s.cartItems);
   const getCartTotal = useStore((s) => s.getCartTotal);
   const shippingInfo = useStore((s) => s.shippingInfo);
   const setShippingInfo = useStore((s) => s.setShippingInfo);
@@ -24,11 +26,26 @@ export default function CheckoutPage() {
   const clearCart = useStore((s) => s.clearCart);
   const sanitizeCheckoutOnOrder = useStore((s) => s.sanitizeCheckoutOnOrder);
 
+  // Use shopify cart if available, otherwise fall back to legacy cart
+  const fallbackImg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='64' viewBox='0 0 48 64'%3E%3Crect width='48' height='64' fill='%23FAF7F4'/%3E%3Crect x='14' y='22' width='20' height='20' rx='10' fill='%23E8E4DF'/%3E%3C/svg%3E";
+  
+  const cartItems = useMemo(() => {
+    if (shopifyCart?.lines?.length) {
+      return shopifyCart.lines.map(item => ({
+        product: item.product,
+        quantity: item.quantity,
+        selectedColor: item.selectedColor,
+        selectedSize: item.selectedSize
+      }));
+    }
+    return legacyCartItems;
+  }, [shopifyCart, legacyCartItems]);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const subtotal = getCartTotal();
+  const subtotal = shopifyCart?.subtotal || getCartTotal();
   const shippingCost = shippingMethod === 'express' ? 140 : subtotal >= 2000 ? 0 : 80;
   const total = subtotal + shippingCost;
 
@@ -91,6 +108,11 @@ export default function CheckoutPage() {
     addOrder(order);
     setLastOrder(order);
     clearCart();
+    // Also clear Shopify cart if it exists
+    const shopifyClearCart = useShopifyStore.getState().clearCart;
+    if (shopifyClearCart) {
+      shopifyClearCart();
+    }
     sanitizeCheckoutOnOrder();
     setOrderPlaced(true);
     setIsSubmitting(false);
@@ -392,11 +414,14 @@ export default function CheckoutPage() {
 
                 {/* Items */}
                 <div className="space-y-3 max-h-60 overflow-y-auto custom-scroll mb-5">
-                  {cartItems.map((item) => (
-                    <div key={`${item.product.id}-${item.selectedColor}`} className="flex items-center gap-3">
+                  {cartItems.map((item) => {
+                    const img = item.product?.image;
+                    const imgSrc = img && typeof img === 'string' && img.trim() ? img : fallbackImg;
+                    return (
+                    <div key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}`} className="flex items-center gap-3">
                       <div className="w-12 h-16 bg-secondary flex-shrink-0 overflow-hidden relative">
                         <Image
-                          src={item.product.image}
+                          src={imgSrc}
                           alt={item.product.name}
                           fill
                           className="object-cover"
@@ -406,14 +431,14 @@ export default function CheckoutPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-medium text-warm-text truncate font-sans">{item.product.name}</p>
                         <p className="text-[9px] text-muted-foreground font-light font-sans">
-                          {item.selectedColor} &middot; Qty {item.quantity}
+                          {item.selectedColor}{item.selectedSize ? ` · ${item.selectedSize}` : ''} &middot; Qty {item.quantity}
                         </p>
                       </div>
                       <span className="text-[10px] font-medium text-warm-text font-sans">
                         EGP {(item.product.price * item.quantity).toLocaleString()}
                       </span>
                     </div>
-                  ))}
+                  )})}
                 </div>
 
                 <div className="border-t border-warm-border pt-4 space-y-2.5">

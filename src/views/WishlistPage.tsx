@@ -17,7 +17,7 @@ export default function WishlistPage() {
   const { addItem } = useShopifyCart();
   const shopifyProducts = useShopifyStore((s) => s.cart);
 
-  const products = shopifyProducts.length > 0 ? [] : storeProducts;
+  const products = storeProducts;
 
   const wishlisted = useMemo(() => {
     if (products.length > 0) {

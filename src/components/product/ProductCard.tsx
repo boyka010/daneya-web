@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Heart, Eye, ShoppingBag, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { useStore } from '@/store/useStore';
 import { useShopifyCart } from '@/hooks/useShopifyCart';
 import type { Product } from '@/data/products';
@@ -44,6 +44,7 @@ function renderStars(rating: number) {
 }
 
 export default function ProductCard({ product, index = 0, priority = false }: ProductCardProps) {
+  const navigate = useNavigate();
   const [imgLoaded, setImgLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hoveredColor, setHoveredColor] = useState<string | null>(null);
@@ -57,7 +58,7 @@ export default function ProductCard({ product, index = 0, priority = false }: Pr
   const handleNavigate = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate({ type: 'product', id: product.id });
+    navigate({ type: 'product', handle: (product as any).handle || String(product.id) });
   }, [product.id]);
 
   const handleQuickView = useCallback((e: React.MouseEvent) => {

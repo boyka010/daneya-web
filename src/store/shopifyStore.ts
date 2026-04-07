@@ -3,14 +3,6 @@ import { persist } from 'zustand/middleware';
 import type { Product } from '@/data/products';
 import type { PageRoute } from '@/lib/router';
 
-const CART_ID_COOKIE = 'daneya_cart_id';
-
-function getCartIdFromCookie(): string | null {
-  if (typeof document === 'undefined') return null;
-  const matches = document.cookie.match(new RegExp('(^| )' + CART_ID_COOKIE + '=([^;]+)'));
-  return matches ? matches[2] : null;
-}
-
 export interface CartItem {
   product: Product;
   quantity: number;
@@ -28,7 +20,7 @@ export interface ShopifyCart {
 }
 
 interface StoreState {
-  // Cart - Shopify-backed
+  // Cart
   cart: ShopifyCart | null;
   cartId: string | null;
   setCart: (cart: ShopifyCart | null) => void;
@@ -40,164 +32,266 @@ interface StoreState {
   getCartTotal: () => number;
   getCartCount: () => number;
 
-  // Wishlist
-  wishlistItems: number[];
-  toggleWishlist: (productId: number) => void;
-  isInWishlist: (productId: number) => boolean;
-
   // UI
   isCartDrawerOpen: boolean;
   setCartDrawerOpen: (open: boolean) => void;
   isQuickViewOpen: boolean;
   quickViewProduct: Product | null;
   setQuickViewProduct: (product: Product | null) => void;
-  isMobileMenuOpen: boolean;
-  setMobileMenuOpen: (open: boolean) => void;
   isAnnouncementOpen: boolean;
   setAnnouncementOpen: (open: boolean) => void;
   isSearchOpen: boolean;
   setSearchOpen: (open: boolean) => void;
 
-  // Page
-  currentPage: PageRoute;
-  setCurrentPage: (page: PageRoute) => void;
+  // Wishlist
+  wishlistItems: number[];
+  toggleWishlist: (productId: number) => void;
+  isInWishlist: (productId: number) => boolean;
 
   // Filters
   activeCategory: string;
   setActiveCategory: (category: string) => void;
   sortBy: string;
   setSortBy: (sort: string) => void;
+
+  // Home Sections
+  homeSections: any[];
+  setHomeSections: (sections: any[]) => void;
+  reorderSections: (activeId: string, overId: string) => void;
+  toggleSection: (sectionId: string) => void;
+  updateSection: (sectionId: string, updates: any) => void;
+  addSection: (type: any) => void;
+  deleteSection: (sectionId: string) => void;
+
+  // Site Config
+  siteConfig: any;
+  updateSiteConfig: (updates: any) => void;
+
+  // Admin
+  adminSection: string;
+  setAdminSection: (section: string) => void;
+  adminProducts: any[];
+  setAdminProducts: (products: any[]) => void;
+  adminCollections: any[];
+  setAdminCollections: (collections: any[]) => void;
+  adminOrders: any[];
+  setAdminOrders: (orders: any[]) => void;
+  adminSettings: any;
+  setAdminSettings: (settings: any) => void;
+
+  // Theme
+  activeTheme: any;
+  setActiveTheme: (theme: any) => void;
 }
+
+export const sectionTypeConfig: Record<string, { label: string; description: string; defaultConfig: Record<string, any> }> = {
+  hero: { label: 'Hero Banner', description: 'Full-width hero slideshow', defaultConfig: { autoplay: true, interval: 7 } },
+  collections: { label: 'Collections', description: 'Shop by collection circles', defaultConfig: { layout: 'circles' } },
+  featured_products: { label: 'Featured Products', description: 'Best sellers slider', defaultConfig: { count: 8 } },
+  new_arrivals: { label: 'New Arrivals', description: 'Latest products slider', defaultConfig: { count: 8 } },
+  banner: { label: 'Promo Banner', description: 'Full-width image banner', defaultConfig: {} },
+  testimonials: { label: 'Testimonials', description: 'Customer reviews', defaultConfig: {} },
+  newsletter: { label: 'Newsletter', description: 'Email signup', defaultConfig: {} },
+  product_grid: { label: 'Product Grid', description: 'Custom product grid', defaultConfig: { count: 8 } },
+  instagram_feed: { label: 'Instagram Feed', description: 'Social feed', defaultConfig: {} },
+  brand_manifesto: { label: 'Brand Manifesto', description: 'Brand story', defaultConfig: {} },
+  custom_html: { label: 'Custom HTML', description: 'Custom content', defaultConfig: { html: '' } },
+  size_guide: { label: 'Size Guide', description: 'Size chart image', defaultConfig: {} },
+  collection_products: { label: 'Collection Products', description: 'Products from a collection', defaultConfig: { collection: '', count: 8 } },
+};
+
+export const defaultSections = [
+  { id: 'sec-1', type: 'hero', enabled: true, title: 'Redefine Your Style', config: { autoplay: true, interval: 7 } },
+  { id: 'sec-2', type: 'new_arrivals', enabled: true, title: 'New Arrivals', config: { count: 8 } },
+  { id: 'sec-3', type: 'featured_products', enabled: true, title: 'Best Sellers', config: { count: 8 } },
+  { id: 'sec-4', type: 'collection_products', enabled: true, title: 'Abayas', config: { collection: 'abaya', count: 8 } },
+  { id: 'sec-5', type: 'collection_products', enabled: true, title: 'Capes', config: { collection: 'capes', count: 8 } },
+  { id: 'sec-6', type: 'collections', enabled: true, title: 'Shop by Collection', config: {} },
+  { id: 'sec-7', type: 'size_guide', enabled: true, title: 'Size Guide', config: {} },
+];
+
+export const defaultSiteConfig = {
+  storeName: 'Daneya',
+  colors: { primary: '#1C1614', accent: '#C9A97A', background: '#FAF7F4' },
+  typography: { headingFont: 'Playfair Display', bodyFont: 'Inter' },
+  announcementEnabled: true,
+  announcementText: 'Free shipping on orders over EGP 2,000',
+  announcementBgColor: '#1C1614',
+  announcementTextColor: '#FFFFFF',
+};
 
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
-      // Cart
+      // ── Cart ──
       cart: null,
       cartId: null,
       setCart: (cart) => set({ cart }),
-      setCartId: (cartId) => set({ cartId }),
-      
-      addToCart: (product, quantity, selectedColor, selectedSize, variantId) => {
-        const existingItems = get().cart?.lines || [];
-        const existingIndex = existingItems.findIndex(
-          (item) => item.product.id === product.id && item.selectedColor === selectedColor && item.selectedSize === selectedSize
+      setCartId: (id) => set({ cartId: id }),
+
+      addToCart: (product, quantity, color, selectedSize, variantId) => {
+        const currentCart = get().cart;
+        const existingLines = currentCart?.lines || [];
+        const existingIndex = existingLines.findIndex(
+          (item) => item.product.id === product.id && item.selectedColor === color && item.selectedSize === selectedSize
         );
-        
-        let newItems;
+
+        let newLines: CartItem[];
         if (existingIndex > -1) {
-          newItems = [...existingItems];
-          newItems[existingIndex].quantity += quantity;
+          newLines = [...existingLines];
+          newLines[existingIndex] = { ...newLines[existingIndex], quantity: newLines[existingIndex].quantity + quantity };
         } else {
-          newItems = [...existingItems, { product, quantity, selectedColor, selectedSize, variantId }];
+          newLines = [...existingLines, { product, quantity, selectedColor: color, selectedSize, variantId }];
         }
-        
-        const newSubtotal = newItems.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
-        
-        // Only create a cart ID if we have a real Shopify variant
-        const existingCartId = get().cart?.id;
-        const newCartId = (variantId && variantId.startsWith('gid://') && existingCartId)
-          ? existingCartId
-          : (variantId && variantId.startsWith('gid://') ? `shopify_${Date.now()}` : null);
-        
+
+        const subtotal = newLines.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
+        const totalQuantity = newLines.reduce((count, item) => count + item.quantity, 0);
+
         set({
           cart: {
-            id: newCartId,
-            checkoutUrl: get().cart?.checkoutUrl || '',
-            totalQuantity: newItems.reduce((count, item) => count + item.quantity, 0),
-            lines: newItems,
-            subtotal: newSubtotal,
+            id: currentCart?.id || null,
+            checkoutUrl: currentCart?.checkoutUrl || '',
+            totalQuantity,
+            lines: newLines,
+            subtotal,
           },
         });
       },
 
       updateCartItem: (index, quantity) => {
-        const items = [...(get().cart?.lines || [])];
-        if (items[index]) {
-          items[index].quantity = quantity;
+        const currentCart = get().cart;
+        if (!currentCart) return;
+        const newLines = [...currentCart.lines];
+        if (quantity <= 0) {
+          newLines.splice(index, 1);
+        } else {
+          newLines[index] = { ...newLines[index], quantity };
         }
-        const newSubtotal = items.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
-        set({ cart: { ...get().cart!, lines: items, subtotal: newSubtotal } });
+        const subtotal = newLines.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
+        const totalQuantity = newLines.reduce((count, item) => count + item.quantity, 0);
+        set({ cart: { ...currentCart, lines: newLines, subtotal, totalQuantity } });
       },
 
       removeFromCart: (index) => {
         const currentCart = get().cart;
         if (!currentCart) return;
-        const items = (currentCart.lines || []).filter((_, i) => i !== index);
-        const newSubtotal = items.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
-        set({ cart: { ...currentCart, lines: items, subtotal: newSubtotal } });
+        const newLines = currentCart.lines.filter((_, i) => i !== index);
+        const subtotal = newLines.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0);
+        const totalQuantity = newLines.reduce((count, item) => count + item.quantity, 0);
+        set({ cart: { ...currentCart, lines: newLines, subtotal, totalQuantity } });
       },
 
-      clearCart: () => set({ cart: null, cartId: null }),
-      
+      clearCart: () => set({ cart: null }),
+
       getCartTotal: () => {
-        const items = get().cart?.lines;
-        if (!items || !Array.isArray(items)) return 0;
-        return items.reduce((total, item) => total + ((item?.product?.price || 0) * (item?.quantity || 0)), 0);
+        const lines = get().cart?.lines;
+        if (!lines) return 0;
+        return lines.reduce((total, item) => total + ((item?.product?.price || 0) * (item?.quantity || 0)), 0);
       },
-      
+
       getCartCount: () => {
-        const items = get().cart?.lines;
-        if (!items || !Array.isArray(items)) return 0;
-        return items.reduce((count, item) => count + (item?.quantity || 0), 0);
+        const lines = get().cart?.lines;
+        if (!lines) return 0;
+        return lines.reduce((count, item) => count + (item?.quantity || 0), 0);
       },
 
-      // Wishlist
-      wishlistItems: [],
-      toggleWishlist: (productId) => {
-        const items = get().wishlistItems;
-        if (items.includes(productId)) {
-          set({ wishlistItems: items.filter((id) => id !== productId) });
-        } else {
-          set({ wishlistItems: [...items, productId] });
-        }
-      },
-      isInWishlist: (productId) => get().wishlistItems.includes(productId),
-
-      // UI
+      // ── UI ──
       isCartDrawerOpen: false,
       setCartDrawerOpen: (open) => set({ isCartDrawerOpen: open }),
       isQuickViewOpen: false,
       quickViewProduct: null,
       setQuickViewProduct: (product) => set({ isQuickViewOpen: !!product, quickViewProduct: product }),
-      isMobileMenuOpen: false,
-      setMobileMenuOpen: (open) => set({ isMobileMenuOpen: open }),
       isAnnouncementOpen: true,
       setAnnouncementOpen: (open) => set({ isAnnouncementOpen: open }),
       isSearchOpen: false,
       setSearchOpen: (open) => set({ isSearchOpen: open }),
 
-      // Page
-      currentPage: { type: 'home' },
-      setCurrentPage: (page) => set({ currentPage: page }),
+      // ── Wishlist ──
+      wishlistItems: [],
+      toggleWishlist: (productId) => {
+        const items = get().wishlistItems;
+        set({ wishlistItems: items.includes(productId) ? items.filter((id) => id !== productId) : [...items, productId] });
+      },
+      isInWishlist: (productId) => get().wishlistItems.includes(productId),
 
-      // Filters
+      // ── Filters ──
       activeCategory: 'all',
       setActiveCategory: (category) => set({ activeCategory: category }),
       sortBy: 'featured',
       setSortBy: (sort) => set({ sortBy: sort }),
+
+      // ── Home Sections ──
+      homeSections: defaultSections,
+      setHomeSections: (sections) => set({ homeSections: sections }),
+      reorderSections: (activeId, overId) => {
+        const sections = [...get().homeSections];
+        const activeIdx = sections.findIndex((s) => s.id === activeId);
+        const overIdx = sections.findIndex((s) => s.id === overId);
+        if (activeIdx === -1 || overIdx === -1) return;
+        const [moved] = sections.splice(activeIdx, 1);
+        sections.splice(overIdx, 0, moved);
+        set({ homeSections: sections });
+      },
+      toggleSection: (sectionId) => {
+        set({
+          homeSections: get().homeSections.map((s) => (s.id === sectionId ? { ...s, enabled: !s.enabled } : s)),
+        });
+      },
+      updateSection: (sectionId, updates) => {
+        set({
+          homeSections: get().homeSections.map((s) => (s.id === sectionId ? { ...s, ...updates } : s)),
+        });
+      },
+      addSection: (type) => {
+        const config = sectionTypeConfig[type]?.defaultConfig || {};
+        const newSection = {
+          id: `sec-${Date.now()}`,
+          type,
+          enabled: true,
+          title: sectionTypeConfig[type]?.label || 'New Section',
+          config,
+        };
+        set({ homeSections: [...get().homeSections, newSection] });
+      },
+      deleteSection: (sectionId) => {
+        set({ homeSections: get().homeSections.filter((s) => s.id !== sectionId) });
+      },
+
+      // ── Site Config ──
+      siteConfig: defaultSiteConfig,
+      updateSiteConfig: (updates) => set({ siteConfig: { ...get().siteConfig, ...updates } }),
+
+      // ── Admin ──
+      adminSection: 'dashboard',
+      setAdminSection: (section) => set({ adminSection: section }),
+      adminProducts: [],
+      setAdminProducts: (products) => set({ adminProducts: products }),
+      adminCollections: [],
+      setAdminCollections: (collections) => set({ adminCollections: collections }),
+      adminOrders: [],
+      setAdminOrders: (orders) => set({ adminOrders: orders }),
+      adminSettings: {},
+      setAdminSettings: (settings) => set({ adminSettings: settings }),
+
+      // ── Theme ──
+      activeTheme: { name: 'Default' },
+      setActiveTheme: (theme) => set({ activeTheme: theme }),
     }),
     {
-      name: 'daneya-store',
-      partialize: (state) => {
-        const cookieCartId = getCartIdFromCookie();
-        
-        // If there's a Shopify cart ID in cookie but different in localStorage, 
-        // we should NOT persist the local cart - it will be synced from Shopify
-        if (cookieCartId && state.cartId !== cookieCartId) {
-          return {
-            wishlistItems: state.wishlistItems,
-            isAnnouncementOpen: state.isAnnouncementOpen,
-          };
-        }
-        
-        return {
-          cart: state.cart,
-          cartId: state.cartId,
-          wishlistItems: state.wishlistItems,
-          isAnnouncementOpen: state.isAnnouncementOpen,
-        };
-      },
+      name: 'daneya-store-v14',
+      partialize: (state) => ({
+        cart: state.cart,
+        cartId: state.cartId,
+        wishlistItems: state.wishlistItems,
+        isAnnouncementOpen: state.isAnnouncementOpen,
+        homeSections: state.homeSections,
+        activeTheme: state.activeTheme,
+        adminProducts: state.adminProducts,
+        adminCollections: state.adminCollections,
+        adminOrders: state.adminOrders,
+        adminSettings: state.adminSettings,
+        siteConfig: state.siteConfig,
+      }),
     }
   )
 );

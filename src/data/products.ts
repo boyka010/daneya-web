@@ -2,6 +2,7 @@ export interface Product {
   id: number;
   name: string;
   nameAr?: string;
+  handle?: string;
   category: string;
   price: number;
   originalPrice?: number;
@@ -19,7 +20,20 @@ export interface Product {
   sku: string;
   tags: string[];
   shopifyId?: string;
+  shopifyHandle?: string;
   variants?: { id: string; price: number; available: boolean; options: Record<string, string> }[];
+}
+
+function toHandle(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .split('-')
+    .slice(0, 3)
+    .join('-');
 }
 
 export const products: Product[] = [
@@ -624,8 +638,19 @@ export const saleItems = products.filter(p => p.badge === "Flash Sale" || p.badg
 export const trendingItems = products.filter(p => p.badge === "Trending");
 export const outletProducts = products.filter(p => p.badge === "Flash Sale");
 
+// Auto-generate handles for products that don't have one
+products.forEach(p => {
+  if (!p.handle) {
+    p.handle = toHandle(p.name);
+  }
+});
+
 export function getProductById(id: number): Product | undefined {
   return products.find(p => p.id === id);
+}
+
+export function getProductByHandle(handle: string): Product | undefined {
+  return products.find(p => p.handle === handle);
 }
 
 export function getProductsByCategory(category: string): Product[] {

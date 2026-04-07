@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -51,6 +51,7 @@ const navSections = [
 ];
 
 export default function AdminSidebar() {
+  const navigate = useNavigate();
   const adminSection = useStore((s) => s.adminSection);
   const setAdminSection = useStore((s) => s.setAdminSection);
   const [collapsed, setCollapsed] = useState(false);

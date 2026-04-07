@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { Search, Heart, ShoppingBag, X, Menu, Instagram, Facebook, Globe, ChevronDown } from 'lucide-react';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { cn } from '@/lib/utils';
@@ -59,6 +60,7 @@ const navLinks: NavLink[] = [
 ];
 
 export default function Navbar() {
+  const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,8 +79,8 @@ export default function Navbar() {
   const cartCount = useShopifyStore((s) => s.getCartCount());
   const wishCount = useStore((s) => s.wishlistItems.length);
   const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
-  const currentPage = useStore((s) => s.currentPage);
-  const isHomePage = currentPage.type === 'home';
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
 
   const isRTL = locale === 'ar';
 
@@ -357,7 +359,7 @@ export default function Navbar() {
                           setSearchOpen(false);
                           setSearchQuery('');
                           setShowResults(false);
-                          navigate({ type: 'product', id: product.id });
+                          navigate({ type: 'product', handle: (product as any).handle || String(product.id) });
                         }}
                         className="flex items-center gap-4 w-full py-2.5 hover:bg-[#F5F2EE] transition-colors text-left"
                       >

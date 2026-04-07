@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { ArrowRight, Star, Users, Zap } from 'lucide-react';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 
 interface TrendingBadgeProps {
   type?: 'hot' | 'new' | 'bestseller';

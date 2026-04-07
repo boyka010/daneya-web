@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight, Star, Send, Quote, Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { newArrivals, bestSellers, saleItems, trendingItems } from '@/data/products';
 import { collections } from '@/data/collections';
 import { testimonials } from '@/data/testimonials';

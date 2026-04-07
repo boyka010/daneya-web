@@ -52,22 +52,35 @@ export async function addToCartAction(cartId: string | null, variantId: string, 
       return { success: false, error: 'Shopify not configured', cart: null }
     }
 
-    // Don't create cart with invalid/fake variant ID - this causes auto-add bug
+    // Don't create cart with invalid/fake variant ID
     if (!variantId || !variantId.startsWith('gid://')) {
       console.log('No valid variantId provided - skipping Shopify cart creation');
       return { success: true, cart: null }
     }
 
     let cart;
+    let isNewCart = false;
     
     if (!cartId) {
-      console.log('Creating new cart with valid variantId:', variantId);
-      cart = await createCart(variantId, quantity);
-      if (cart?.id) {
-        await setCartIdCookie(cart.id)
+      // Create new cart - but FIRST check if there's already a cart ID in cookie
+      const cookieCartId = await getOrCreateCartId();
+      if (cookieCartId) {
+        console.log('Found existing cart in cookie, adding to it:', cookieCartId);
+        cart = await addToCart(cookieCartId, variantId, quantity);
+      } else {
+        console.log('Creating new cart with valid variantId:', variantId);
+        cart = await createCart(variantId, quantity);
+        isNewCart = true;
       }
     } else {
-      cart = await addToCart(cartId, variantId, quantity)
+      // Use existing cart
+      console.log('Adding to existing cart:', cartId);
+      cart = await addToCart(cartId, variantId, quantity);
+    }
+    
+    // Save cart ID to cookie
+    if (cart?.id && isNewCart) {
+      await setCartIdCookie(cart.id);
     }
     
     console.log('Cart result:', JSON.stringify(cart));
@@ -78,6 +91,13 @@ export async function addToCartAction(cartId: string | null, variantId: string, 
       const checkoutUrl = `https://${SHOPIFY_CONFIG.storeDomain}/cart/${cart.id.replace('gid://shopify/Cart/', '')}/checkout`;
       console.log('Generated fallback checkoutUrl:', checkoutUrl);
       cart.checkoutUrl = checkoutUrl;
+    }
+    
+    // Fetch the FULL cart to return accurate data
+    if (cart?.id) {
+      const fullCart = await getCart(cart.id);
+      console.log('Full cart from Shopify:', fullCart);
+      cart = fullCart;
     }
     
     revalidatePath('/')
@@ -109,7 +129,26 @@ export async function removeFromCartAction(cartId: string, lineIds: string[]) {
       return { success: false, error: 'Shopify not configured', cart: null }
     }
 
-    const cart = await removeFromCart(cartId, lineIds)
+    // lineIds could be merchandise IDs - we need to convert them to line IDs
+    // First, get the current cart to find the line IDs
+    const currentCart = await getCart(cartId);
+    if (!currentCart || !currentCart.lines?.edges) {
+      return { success: false, error: 'Cart not found', cart: null }
+    }
+    
+    // Find line IDs that match the merchandise IDs
+    const actualLineIds = currentCart.lines.edges
+      .filter((edge: any) => lineIds.includes(edge.node.merchandise.id))
+      .map((edge: any) => edge.node.id);
+    
+    console.log('Removing with line IDs:', actualLineIds);
+    
+    if (actualLineIds.length === 0) {
+      console.log('No matching line IDs found');
+      return { success: true, cart: currentCart }
+    }
+    
+    const cart = await removeFromCart(cartId, actualLineIds)
     revalidatePath('/')
     return { success: true, cart }
   } catch (error) {

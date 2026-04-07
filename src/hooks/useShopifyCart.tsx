@@ -90,17 +90,15 @@ export function useShopifyCart() {
   const [isPending, startTransition] = useTransition();
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Sync cart from Shopify on mount
+  // Sync cart from Shopify on mount - ONLY if we have a cartId
   useEffect(() => {
     async function syncCartFromShopify() {
-      const cookieCartId = getCookie(CART_ID_COOKIE);
-      if (!cookieCartId || isSyncing) return;
+      const storedCartId = useShopifyStore.getState().cartId;
+      if (!storedCartId) return;
       
-      setIsSyncing(true);
       try {
-        const result = await getCartAction(cookieCartId);
+        const result = await getCartAction(storedCartId);
         if (result.success && result.cart) {
-          // Update local store with Shopify cart data
           const shopifyCart = result.cart;
           const lines = shopifyCart.lines?.edges?.map((edge: any) => ({
             product: {
@@ -126,7 +124,6 @@ export function useShopifyCart() {
             variantId: edge.node.merchandise.id,
           })) || [];
           
-          setCartId(shopifyCart.id);
           setCart({
             id: shopifyCart.id,
             checkoutUrl: shopifyCart.checkoutUrl || '',
@@ -134,50 +131,75 @@ export function useShopifyCart() {
             lines: lines,
             subtotal: parseFloat(shopifyCart.cost?.subtotalAmount?.amount || '0'),
           });
-          console.log('Synced cart from Shopify:', lines.length, 'items');
         }
       } catch (e) {
-        console.log('Failed to sync cart from Shopify:', e);
-      } finally {
-        setIsSyncing(false);
+        // Silent fail
       }
     }
     
     syncCartFromShopify();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addItem = useCallback(async (product: Product, quantity: number, color: string, size?: string, variantId?: string) => {
-    console.log('useShopifyCart addItem called:', { product, quantity, color, size, variantId });
-    
     // Always add to local cart first (optimistic)
     addToCartLocal(product, quantity, color, size);
     setCartDrawerOpen(true);
 
-    // If we have a valid Shopify variant, try to create cart in background
-    // but DON'T replace local cart - just store the checkout URL
+    // If we have a valid Shopify variant, sync with Shopify
     if (variantId && variantId.startsWith('gid://')) {
       startTransition(async () => {
         try {
-          const result = await addToCartAction(cartId, variantId, quantity);
-          if (result.success && result.cart?.checkoutUrl) {
-            if (!cartId && result.cart.id) {
-              setCartId(result.cart.id);
+          let result = await addToCartAction(cartId, variantId, quantity);
+          
+          if (result.success && result.cart) {
+            // Get the cart ID - either new or existing
+            const newCartId = result.cart.id || cartId;
+            
+            if (newCartId && newCartId !== cartId) {
+              setCartId(newCartId);
             }
-            // Update just the checkoutUrl in existing cart, keep local items
-            const currentCart = useShopifyStore.getState().cart;
-            if (currentCart) {
-              useShopifyStore.getState().setCart({
-                ...currentCart,
-                checkoutUrl: result.cart.checkoutUrl,
-              });
-            }
+            
+            // Sync the FULL cart with local store
+            const shopifyCart = result.cart;
+            
+            const lines = shopifyCart.lines?.edges?.map((edge: any) => ({
+              product: {
+                id: parseInt(edge.node.merchandise.product.id.split('/').pop()) || 0,
+                name: edge.node.merchandise.product.title || 'Product',
+                price: parseFloat(edge.node.merchandise.price?.amount || '0'),
+                image: edge.node.merchandise.product.images?.edges?.[0]?.node?.url || '',
+                images: [edge.node.merchandise.product.images?.edges?.[0]?.node?.url || ''],
+                colors: [],
+                sizes: [],
+                category: '',
+                material: '',
+                description: '',
+                rating: 0,
+                reviews: 0,
+                badge: '',
+                sku: '',
+                tags: [],
+              } as Product,
+              quantity: edge.node.quantity,
+              selectedColor: edge.node.merchandise.selectedOptions?.find((o: any) => o.name === 'Color')?.value || '',
+              selectedSize: edge.node.merchandise.selectedOptions?.find((o: any) => o.name === 'Size')?.value || undefined,
+              variantId: edge.node.merchandise.id,
+            })) || [];
+            
+            setCart({
+              id: shopifyCart.id,
+              checkoutUrl: shopifyCart.checkoutUrl || '',
+              totalQuantity: shopifyCart.totalQuantity || 0,
+              lines: lines,
+              subtotal: parseFloat(shopifyCart.cost?.subtotalAmount?.amount || '0'),
+            });
           }
         } catch (e) {
-          console.log('Shopify sync failed, keeping local cart');
+          // Silent fail
         }
       });
     }
-  }, [cartId, addToCartLocal, setCartDrawerOpen, setCartId]);
+  }, [cartId, addToCartLocal, setCartDrawerOpen, setCartId, setCart]);
 
   const updateItem = useCallback(async (lineId: string, quantity: number) => {
     if (!cartId) return;

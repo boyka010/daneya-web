@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Heart, Minus, Plus, X, ShoppingBag, Star } from 'lucide-react';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { useStore } from '@/store/useStore';
 import type { Product } from '@/data/products';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,7 @@ function renderStars(rating: number) {
 }
 
 export default function ProductQuickView() {
+  const navigate = useNavigate();
   const isOpen = useStore((s) => s.isQuickViewOpen);
   const product = useStore((s) => s.quickViewProduct);
   const setOpen = useStore((s) => s.setQuickViewProduct);
@@ -217,7 +218,7 @@ export default function ProductQuickView() {
 
             {/* Full details link */}
             <button
-              onClick={() => { handleClose(); navigate({ type: 'product', id: product.id }); }}
+              onClick={() => { handleClose(); navigate({ type: 'product', handle: (product as any).handle || String(product.id) }); }}
               className="mt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-[#6B6560] hover:text-[#C9A97A] self-center transition-colors duration-300 font-sans"
             >
               View Full Details &rarr;

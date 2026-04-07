@@ -1,8 +1,10 @@
 'use client';
 
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
+import { useTransition } from 'react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
+import { removeFromCartAction } from '@/app/actions/shopify-cart';
 
 interface CartItemProps {
   mode?: 'full' | 'compact';
@@ -12,7 +14,9 @@ interface CartItemProps {
 }
 
 export default function CartItem({ mode = 'full', productId, color, size }: CartItemProps) {
+  const navigate = useNavigate();
   const shopifyCart = useShopifyStore((s) => s.cart);
+  const cartId = useShopifyStore((s) => s.cartId);
   const removeFromCart = useShopifyStore((s) => s.removeFromCart);
   const updateCartItem = useShopifyStore((s) => s.updateCartItem);
   
@@ -34,8 +38,24 @@ export default function CartItem({ mode = 'full', productId, color, size }: Cart
     ? rawImage 
     : fallbackImage;
 
+  const [isPending, startTransition] = useTransition();
+  
   const handleRemove = () => {
+    const variantId = item.variantId;
+    
+    // Remove from local store
     removeFromCart(index);
+    
+    // Remove from Shopify
+    if (cartId && variantId && variantId.startsWith('gid://')) {
+      startTransition(async () => {
+        try {
+          await removeFromCartAction(cartId, [variantId]);
+        } catch (e) {
+          // Silent fail
+        }
+      });
+    }
   };
 
   const handleUpdateQuantity = (newQty: number) => {
@@ -96,7 +116,7 @@ export default function CartItem({ mode = 'full', productId, color, size }: Cart
     <div className="py-5 flex items-start gap-5 border-b border-[#E8E4DF] last:border-0">
       <div
         className="w-24 h-32 relative bg-[#FAF7F4] flex-shrink-0 cursor-pointer overflow-hidden"
-        onClick={() => navigate({ type: 'product', id: product?.id })}
+        onClick={() => navigate({ type: 'product', handle: (product as any).handle || String(product?.id) })}
       >
         <img
           src={imageUrl}
@@ -110,7 +130,7 @@ export default function CartItem({ mode = 'full', productId, color, size }: Cart
         <div className="flex items-start justify-between">
           <div>
             <button
-              onClick={() => navigate({ type: 'product', id: product?.id })}
+              onClick={() => navigate({ type: 'product', handle: (product as any).handle || String(product?.id) })}
               className="font-serif-heading text-sm font-normal text-[#1C1614] hover:text-[#C9A97A] transition-colors leading-snug"
             >
               {product?.name || 'Product'}

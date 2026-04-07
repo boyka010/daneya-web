@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Home, Search, Heart, ShoppingBag } from 'lucide-react';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { motion } from 'framer-motion';
 
 export default function BottomNav() {
+  const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
   const cartCount = useShopifyStore((s) => s.getCartCount());
   const wishCount = useStore((s) => s.wishlistItems.length);

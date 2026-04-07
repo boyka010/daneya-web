@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Quote, Star } from 'lucide-react';
 import Image from 'next/image';
 import { testimonials } from '@/data/testimonials';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 
 export default function EnhancedTestimonialsSection({ title }: { title: string }) {
+  const navigate = useNavigate();
   return (
     <section className="py-16 sm:py-20 lg:py-24 bg-[#FAF7F4]">
       <div className="px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto">

@@ -1,13 +1,23 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import CartItem from '@/components/cart/CartItem';
+import { getCartAction } from '@/app/actions/shopify-cart';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const matches = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return matches ? matches[2] : null;
+}
 
 export default function CartPage() {
+  const navigate = useNavigate();
   const cart = useShopifyStore((s) => s.cart);
+  const setCart = useShopifyStore((s) => s.setCart);
   const clearCart = useShopifyStore((s) => s.clearCart);
   const setCartDrawerOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   
@@ -16,31 +26,96 @@ export default function CartPage() {
   const shipping = subtotal >= 2000 ? 0 : 80;
   const total = subtotal + shipping;
   
-  // Debug logging
-  console.log('CartPage:', { itemsCount: items.length, subtotal, cartId: cart?.id, checkoutUrl: cart?.checkoutUrl });
+  // Only sync if we have a cart ID in state
+  const cartId = cart?.id;
   
-  const handleCheckout = (e: React.MouseEvent) => {
+  useEffect(() => {
+    if (!cartId) return;
+    
+    const syncCart = async () => {
+      try {
+        const result = await getCartAction(cartId);
+        if (result.success && result.cart) {
+          const shopifyCart = result.cart;
+          const lines = shopifyCart.lines?.edges?.map((edge: any) => ({
+            product: {
+              id: parseInt(edge.node.merchandise.product.id.split('/').pop()) || 0,
+              name: edge.node.merchandise.product.title || 'Product',
+              price: parseFloat(edge.node.merchandise.price?.amount || '0'),
+              image: edge.node.merchandise.product.images?.edges?.[0]?.node?.url || '',
+              images: [edge.node.merchandise.product.images?.edges?.[0]?.node?.url || ''],
+              colors: [],
+              sizes: [],
+              category: '',
+              material: '',
+              description: '',
+              rating: 0,
+              reviews: 0,
+              badge: '',
+              sku: '',
+              tags: [],
+            },
+            quantity: edge.node.quantity,
+            selectedColor: edge.node.merchandise.selectedOptions?.find((o: any) => o.name === 'Color')?.value || '',
+            selectedSize: edge.node.merchandise.selectedOptions?.find((o: any) => o.name === 'Size')?.value || undefined,
+            variantId: edge.node.merchandise.id,
+          })) || [];
+          
+          setCart({
+            id: shopifyCart.id,
+            checkoutUrl: shopifyCart.checkoutUrl || '',
+            totalQuantity: shopifyCart.totalQuantity || 0,
+            lines: lines,
+            subtotal: parseFloat(shopifyCart.cost?.subtotalAmount?.amount || '0'),
+          });
+        }
+      } catch (e) {
+        // Silent fail
+      }
+    };
+    
+    syncCart();
+  }, [cartId, setCart]);
+  
+  const handleCheckout = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('handleCheckout called', { items: items.length, checkoutUrl: cart?.checkoutUrl });
-    
     if (!items.length) {
-      console.log('No items - going to shop');
       window.location.hash = '#/shop';
       return;
     }
     
-    const hasValidShopifyUrl = cart?.checkoutUrl && cart.checkoutUrl.includes('/cart/');
-    console.log('hasValidShopifyUrl:', hasValidShopifyUrl);
-    
-    if (hasValidShopifyUrl) {
-      console.log('Going to Shopify:', cart.checkoutUrl);
-      window.location.href = cart.checkoutUrl;
-    } else {
-      console.log('Going to internal checkout');
-      window.location.hash = '#/checkout';
+    // Get fresh checkout URL from Shopify
+    const cookieCartId = getCookie('daneya_cart_id');
+    if (cookieCartId) {
+      try {
+        const result = await getCartAction(cookieCartId);
+        if (result.success && result.cart?.checkoutUrl) {
+          window.location.href = result.cart.checkoutUrl;
+          return;
+        }
+      } catch (e) {
+        // Fall through
+      }
     }
+    
+    // Fallback - try permalink format
+    const shopifyItems = items
+      .filter(item => item.variantId && item.variantId.startsWith('gid://'))
+      .map(item => {
+        const variantToken = item.variantId!.replace('gid://shopify/ProductVariant/', '');
+        return `${variantToken}:${item.quantity}`;
+      });
+    
+    if (shopifyItems.length > 0) {
+      const cartPath = shopifyItems.join(',');
+      const checkoutUrl = `https://daneya.shop/cart/${cartPath}`;
+      window.location.href = checkoutUrl;
+      return;
+    }
+    
+    window.location.hash = '#/checkout';
   };
 
   if (items.length === 0) {

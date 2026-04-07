@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, ShoppingBag, Minus, Plus, Star, ChevronRight, ChevronDown, ChevronUp, Truck, RotateCcw, Shield, Check, ArrowUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { products as localProducts, getProductById } from '@/data/products';
 import { cn } from '@/lib/utils';
 import ProductCard from '@/components/product/ProductCard';
@@ -16,7 +16,7 @@ import { useShopifyCart } from '@/hooks/useShopifyCart';
 import type { Product } from '@/data/products';
 
 interface ProductPageProps {
-  productId: number;
+  productHandle: string;
 }
 
 function renderStars(rating: number, reviews: number) {
@@ -55,7 +55,8 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-export default function ProductPage({ productId }: ProductPageProps) {
+export default function ProductPage({ productHandle }: ProductPageProps) {
+  const navigate = useNavigate();
   const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -76,12 +77,12 @@ export default function ProductPage({ productId }: ProductPageProps) {
   }, []);
 
   const product = useMemo(() => {
-    // First try local products
-    const local = getProductById(productId);
+    // First try local products by handle
+    const local = localProducts.find(p => (p as any).handle === productHandle);
     if (local) return local;
-    // Then try Shopify products
-    return shopifyProducts.find(p => p.id === productId);
-  }, [productId, shopifyProducts]);
+    // Then try Shopify products by handle
+    return shopifyProducts.find(p => (p as any).handle === productHandle);
+  }, [productHandle, shopifyProducts]);
   
   const isInWishlist = useStore((s) => product ? s.isInWishlist(product.id) : false);
   const toggleWishlist = useStore((s) => s.toggleWishlist);
@@ -94,6 +95,8 @@ export default function ProductPage({ productId }: ProductPageProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showStickyATC, setShowStickyATC] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [colorError, setColorError] = useState(false);
+  const [sizeError, setSizeError] = useState(false);
   
   useEffect(() => {
     setMounted(true);
@@ -134,28 +137,35 @@ export default function ProductPage({ productId }: ProductPageProps) {
     
     // Require size selection - only if more than One Size
     const hasMultipleSizes = availableSizes.length > 1 || (availableSizes[0] !== 'One Size' && availableSizes[0] !== undefined);
+    
+    // Reset errors first
+    setColorError(false);
+    setSizeError(false);
+    
+    let hasError = false;
+    
     if (hasMultipleSizes && !selectedSize) {
-      // Scroll to size selector
+      setSizeError(true);
       const sizeEl = document.getElementById('size-selector');
       if (sizeEl) {
         sizeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        sizeEl.classList.add('animate-pulse');
-        setTimeout(() => sizeEl.classList.remove('animate-pulse'), 2000);
       }
-      return;
+      hasError = true;
     }
     
     // Require color selection if product has colors
     if (product.colors && product.colors.length > 0 && !selectedColor) {
-      // Scroll to color selector
-      const colorEl = document.getElementById('color-selector');
-      if (colorEl) {
-        colorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        colorEl.classList.add('animate-pulse');
-        setTimeout(() => colorEl.classList.remove('animate-pulse'), 2000);
+      setColorError(true);
+      if (!hasError) {
+        const colorEl = document.getElementById('color-selector');
+        if (colorEl) {
+          colorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
-      return;
+      hasError = true;
     }
+    
+    if (hasError) return;
     
     setIsAddingToCart(true);
     console.log('Adding to cart:', product.name, 'ID:', product.id, 'Shopify ID:', product.shopifyId);
@@ -182,7 +192,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
     return (
       <div className="min-h-screen flex items-center justify-center flex-col gap-4">
         <p className="font-serif-heading text-xl text-[#1C1614]">Product not found</p>
-        <p className="text-sm text-[#6B6560]">ID: {productId}</p>
+        <p className="text-sm text-[#6B6560]">Handle: {productHandle}</p>
         <button onClick={() => navigate({ type: 'shop' })} className="text-[#C9A97A]">Go to Shop</button>
       </div>
     );
@@ -330,15 +340,15 @@ export default function ProductPage({ productId }: ProductPageProps) {
 
             {/* Color selector */}
             {product.colors.length > 0 && (
-              <div id="color-selector" className="mt-6">
+              <div id="color-selector" className={cn("mt-6", colorError && "animate-shake")}>
                 <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#6B6560] mb-3 font-sans">
-                  Color — <span className="text-[#1C1614]">{selectedColor}</span>
+                  Color — <span className="text-[#1C1614]">{selectedColor || 'Select color*'}</span>
                 </p>
                 <div className="flex items-center gap-3">
                   {product.colors.map((color) => (
                     <button
                       key={color.name}
-                      onClick={() => setSelectedColor(color.name)}
+                      onClick={() => { setSelectedColor(color.name); setColorError(false); }}
                       className={cn(
                         'w-7 h-7 rounded-full transition-all duration-200',
                         selectedColor === color.name
@@ -350,12 +360,15 @@ export default function ProductPage({ productId }: ProductPageProps) {
                     />
                   ))}
                 </div>
+                {colorError && (
+                  <p className="text-[9px] text-[#C8102E] mt-2 font-sans">Please select a color</p>
+                )}
               </div>
             )}
 
             {/* Size selector */}
             {product.sizes.length > 0 && (
-              <div id="size-selector" className="mt-5">
+              <div id="size-selector" className={cn("mt-5", sizeError && "animate-shake")}>
                 <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#6B6560] mb-3 font-sans">
                   Size {product.sizes[0] !== 'One Size' ? '' : ''}
                 </p>
@@ -363,7 +376,7 @@ export default function ProductPage({ productId }: ProductPageProps) {
                   {product.sizes.map((size) => (
                     <button
                       key={size}
-                      onClick={() => setSelectedSize(size)}
+                      onClick={() => { setSelectedSize(size); setSizeError(false); }}
                       className={cn(
                         'px-4 py-2 text-[10px] uppercase tracking-wider font-medium transition-all duration-200 border font-sans',
                         selectedSize === size
@@ -375,6 +388,9 @@ export default function ProductPage({ productId }: ProductPageProps) {
                     </button>
                   ))}
                 </div>
+                {sizeError && (
+                  <p className="text-[9px] text-[#C8102E] mt-2 font-sans">Please select a size</p>
+                )}
               </div>
             )}
 

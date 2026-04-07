@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingBag, ArrowLeft, Trash2, Move } from 'lucide-react';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { useShopifyCart } from '@/hooks/useShopifyCart';
@@ -11,6 +11,7 @@ import ProductCard from '@/components/product/ProductCard';
 import SEO from '@/components/SEO';
 
 export default function WishlistPage() {
+  const navigate = useNavigate();
   const wishlistItems = useStore((s) => s.wishlistItems);
   const toggleWishlist = useStore((s) => s.toggleWishlist);
   const storeProducts = useStore((s) => s.adminProducts);

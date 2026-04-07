@@ -6,10 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Check, CreditCard, Truck, Wallet, ChevronRight, Shield, Lock } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { sanitizeInput, sanitizeEmail, sanitizePhone, sanitizeZip, validateRequired } from '@/lib/security';
 
 export default function CheckoutPage() {
+  const navigate = useNavigate();
   const shopifyCart = useShopifyStore((s) => s.cart);
   const legacyCartItems = useStore((s) => s.cartItems);
   const getCartTotal = useStore((s) => s.getCartTotal);

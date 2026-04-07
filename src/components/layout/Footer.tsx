@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Instagram, Facebook, ChevronDown } from 'lucide-react';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 
 export default function Footer() {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
 

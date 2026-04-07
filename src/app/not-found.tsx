@@ -2,10 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { Home, Search, ArrowLeft } from 'lucide-react';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import Link from 'next/link';
 
 export default function NotFound() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-[#FAF7F4] flex items-center justify-center px-4">
       <motion.div

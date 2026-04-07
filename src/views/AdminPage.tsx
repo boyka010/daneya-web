@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useStore } from '@/store/useStore';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import DashboardOverview from '@/components/admin/DashboardOverview';
@@ -184,7 +185,8 @@ function AdminLockScreen({ onUnlock }: { onUnlock: () => void }) {
 }
 
 export default function AdminPage() {
-  const currentPage = useStore((s) => s.currentPage);
+  const pathname = usePathname();
+  const urlSection = pathname?.startsWith('/admin/') ? pathname.replace('/admin/', '') : 'dashboard';
   const adminSection = useStore((s) => s.adminSection);
   const setAdminSection = useStore((s) => s.setAdminSection);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -239,13 +241,10 @@ export default function AdminPage() {
 
   // Sync URL section to store
   useEffect(() => {
-    if (currentPage.type === 'admin') {
-      const section = currentPage.section || 'dashboard';
-      if (adminSection !== section) {
-        setAdminSection(section);
-      }
+    if (adminSection !== urlSection) {
+      setAdminSection(urlSection);
     }
-  }, [currentPage, adminSection, setAdminSection]);
+  }, [urlSection, adminSection, setAdminSection]);
 
   const handleUnlock = useCallback(() => {
     localStorage.setItem(SESSION_KEY, 'true');

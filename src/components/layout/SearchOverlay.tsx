@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Search, X, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as Dialog from '@radix-ui/react-dialog';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { searchProducts } from '@/data/products';
 import { Button } from '@/components/ui/button';
 
@@ -14,6 +14,7 @@ interface SearchOverlayProps {
 }
 
 export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ReturnType<typeof searchProducts>>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -141,7 +142,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
                         key={product.id}
                         onClick={() => {
                           handleSelect(product.name);
-                          navigate({ type: 'product', id: product.id });
+                          navigate({ type: 'product', handle: (product as any).handle || String(product.id) });
                         }}
                         className="flex items-center gap-4 w-full p-3 hover:bg-[#F5F2EE] transition-colors text-left group"
                       >

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal, Grid3X3, Grid2X2, X, ChevronDown, Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 import { products as localProducts } from '@/data/products';
 import { categories } from '@/data/categories';
 import ProductCard from '@/components/product/ProductCard';
@@ -23,13 +24,15 @@ const sortOptions = [
 ];
 
 export default function ShopPage() {
-  const currentPage = useStore((s) => s.currentPage);
+  const navigate = useNavigate();
+  const pathname = usePathname();
+  const urlCategory = pathname?.startsWith('/shop/') ? pathname.replace('/shop/', '') : null;
   const activeCategory = useStore((s) => s.activeCategory);
   const setActiveCategory = useStore((s) => s.setActiveCategory);
   const sortBy = useStore((s) => s.sortBy);
   const setSortBy = useStore((s) => s.setSortBy);
 
-  const categoryParam = currentPage.type === 'shop' ? currentPage.category : undefined;
+  const categoryParam = urlCategory || undefined;
 
   // Sync category from URL when navigating
   useEffect(() => {
@@ -40,10 +43,10 @@ export default function ShopPage() {
 
   // Reset to "all" when visiting shop without category
   useEffect(() => {
-    if (currentPage.type === 'shop' && !categoryParam && activeCategory !== 'all') {
+    if (!urlCategory && activeCategory !== 'all') {
       setActiveCategory('all');
     }
-  }, [currentPage, categoryParam, activeCategory, setActiveCategory]);
+  }, [urlCategory, activeCategory, setActiveCategory]);
 
   const [gridCols, setGridCols] = useState<3 | 4>(4);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);

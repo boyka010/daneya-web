@@ -1,16 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, ArrowRight, Star } from 'lucide-react';
-import { navigate } from '@/lib/router';
 import { useStore as useShopifyStore } from '@/store/shopifyStore';
 import { products as localProducts } from '@/data/products';
 import CartItem from './CartItem';
 import CartRecommendations from './CartRecommendations';
+import { getCartAction } from '@/app/actions/shopify-cart';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const matches = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return matches ? matches[2] : null;
+}
 
 export default function CartDrawer() {
+  const router = useRouter();
   const isOpen = useShopifyStore((s) => s.isCartDrawerOpen);
   const setOpen = useShopifyStore((s) => s.setCartDrawerOpen);
   const cart = useShopifyStore((s) => s.cart);
@@ -30,29 +38,41 @@ export default function CartDrawer() {
     }
   }, [isOpen, itemCount]);
   
-  const handleCheckout = () => {
-    console.log('CartDrawer handleCheckout', { itemCount, checkoutUrl: cart?.checkoutUrl });
+  const handleCheckout = async () => {
+    if (itemCount === 0) return;
     
-    const hasValidShopifyUrl = cart?.checkoutUrl && cart.checkoutUrl.includes('/cart/');
+    setOpen(false);
     
-    if (hasValidShopifyUrl) {
-      console.log('Going to Shopify:', cart.checkoutUrl);
-      setOpen(false);
-      window.location.href = cart.checkoutUrl;
+    // Get fresh checkout URL from Shopify
+    const cookieCartId = getCookie('daneya_cart_id');
+    if (cookieCartId) {
+      try {
+        const result = await getCartAction(cookieCartId);
+        if (result.success && result.cart?.checkoutUrl) {
+          window.location.href = result.cart.checkoutUrl;
+          return;
+        }
+      } catch (e) {
+        // Fall through
+      }
+    }
+    
+    // Fallback - try permalink format
+    const shopifyItems = items
+      .filter(item => item.variantId && item.variantId.startsWith('gid://'))
+      .map(item => {
+        const variantToken = item.variantId!.replace('gid://shopify/ProductVariant/', '');
+        return `${variantToken}:${item.quantity}`;
+      });
+    
+    if (shopifyItems.length > 0) {
+      const cartPath = shopifyItems.join(',');
+      const checkoutUrl = `https://daneya.shop/cart/${cartPath}`;
+      window.location.href = checkoutUrl;
       return;
     }
     
-    if (itemCount > 0) {
-      console.log('Going to internal checkout');
-      setOpen(false);
-      setTimeout(() => {
-        window.location.hash = '#/checkout';
-      }, 100);
-    } else {
-      console.log('Cart empty');
-      setOpen(false);
-      window.location.hash = '#/cart';
-    }
+    router.push('/checkout');
   };
 
   return (
@@ -101,7 +121,7 @@ export default function CartDrawer() {
                     Discover our latest collection and find your next favorite piece.
                   </p>
                   <button
-                    onClick={() => { setOpen(false); navigate({ type: 'shop' }); }}
+                    onClick={() => { setOpen(false); router.push('/shop'); }}
                     className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#C9A97A] hover:text-[#1C1614] transition-colors font-sans flex items-center gap-2 mx-auto"
                   >
                     Continue Shopping
@@ -115,7 +135,7 @@ export default function CartDrawer() {
                       {localProducts.slice(0, 3).map((product) => (
                         <button
                           key={product.id}
-                          onClick={() => { setOpen(false); navigate({ type: 'product', id: product.id }); }}
+                          onClick={() => { setOpen(false); router.push(`/product/${(product as any).handle || String(product.id)}`); }}
                           className="flex items-center gap-3 w-full text-left hover:bg-[#FAF7F4] p-2 rounded transition-colors"
                         >
                           <div className="w-12 h-16 bg-[#F5F2EE] overflow-hidden shrink-0">

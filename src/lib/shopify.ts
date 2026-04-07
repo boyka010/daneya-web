@@ -558,6 +558,8 @@ export function transformShopifyProduct(product: ShopifyProduct) {
     id: parseInt(product.id.replace('gid://shopify/Product/', '')),
     name: product.title,
     nameAr: undefined,
+    handle: product.handle,
+    shopifyHandle: product.handle,
     category: product.productType.toLowerCase() || 'other',
     price: parseFloat(product.priceRange.minVariantPrice.amount),
     originalPrice: product.compareAtPriceRange.minVariantPrice.amount !==
@@ -672,7 +674,7 @@ export async function createCart(variantId: string, quantity: number = 1) {
     };
   }>({ query, variables });
 
-  console.log('cartCreate response:', data);
+  console.log('cartCreate response:', JSON.stringify(data));
   console.log('cartCreate userErrors:', data.cartCreate.userErrors);
   
   if (data.cartCreate.userErrors.length > 0) {
@@ -680,7 +682,8 @@ export async function createCart(variantId: string, quantity: number = 1) {
     throw new Error(data.cartCreate.userErrors[0].message);
   }
 
-  console.log('Created cart:', data.cartCreate.cart);
+  console.log('Created cart:', JSON.stringify(data.cartCreate.cart));
+  console.log('Checkout URL from cart:', data.cartCreate.cart.checkoutUrl);
   return data.cartCreate.cart;
 }
 

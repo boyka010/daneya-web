@@ -2,9 +2,10 @@
 
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 
 export default function BrandManifesto() {
+  const navigate = useNavigate();
   return (
     <section className="py-16 sm:py-20 lg:py-24 bg-[#1C1614] relative overflow-hidden">
       {/* Background Pattern */}

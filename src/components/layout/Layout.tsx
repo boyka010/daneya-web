@@ -1,6 +1,7 @@
 'use client';
 
-import { useStore } from '@/store/useStore';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import BottomNav from './BottomNav';
@@ -10,9 +11,31 @@ import ExitIntentPopup from '@/components/ui/ExitIntentPopup';
 import StickyCTAs from '@/components/ui/StickyCTAs';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const currentPage = useStore((s) => s.currentPage);
+  const pathname = usePathname();
+  const router = useRouter();
+  const isAdmin = pathname?.startsWith('/admin');
 
-  if (currentPage.type === 'admin') {
+  // Handle popstate events from browser back/forward and hash changes
+  useEffect(() => {
+    const handleNavigation = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        window.location.reload();
+      } else {
+        router.refresh();
+      }
+    };
+    
+    window.addEventListener('popstate', handleNavigation);
+    window.addEventListener('hashchange', handleNavigation);
+    
+    return () => {
+      window.removeEventListener('popstate', handleNavigation);
+      window.removeEventListener('hashchange', handleNavigation);
+    };
+  }, [router]);
+
+  if (isAdmin) {
     return <>{children}</>;
   }
 

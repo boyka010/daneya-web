@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Instagram, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
-import { navigate } from '@/lib/router';
+import { useNavigate } from '@/hooks/useNavigate';
 
 // Simulated Instagram feed - in production, connect to Instagram API
 const instagramPosts = [

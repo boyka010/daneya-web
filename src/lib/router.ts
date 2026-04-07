@@ -1,7 +1,7 @@
 export type PageRoute =
   | { type: "home" }
   | { type: "shop"; category?: string }
-  | { type: "product"; id: number }
+  | { type: "product"; handle: string }
   | { type: "cart" }
   | { type: "checkout" }
   | { type: "wishlist" }
@@ -13,79 +13,58 @@ export type PageRoute =
   | { type: "contact" }
   | { type: "admin"; section?: string };
 
-export function parseHash(hash: string): PageRoute {
-  const path = (hash.replace("#", "") || "/").replace(/\/+$/, "");
+export function parsePath(path: string): PageRoute {
+  const clean = path.replace(/\/+$/, "");
 
-  if (path === "" || path === "/" || path === "/home") return { type: "home" };
-  if (path.startsWith("/shop/"))
-    return { type: "shop", category: path.split("/")[2] || undefined };
-  if (path === "/shop") return { type: "shop" };
-  if (path.startsWith("/product/")) {
-    const id = parseInt(path.split("/")[2]);
-    return { type: "product", id: isNaN(id) ? 0 : id };
+  if (clean === "" || clean === "/" || clean === "/home") return { type: "home" };
+  if (clean.startsWith("/shop/"))
+    return { type: "shop", category: clean.split("/")[2] || undefined };
+  if (clean === "/shop") return { type: "shop" };
+  if (clean.startsWith("/product/")) {
+    const handle = clean.split("/").slice(2).join("/");
+    return { type: "product", handle: handle || "" };
   }
-  if (path === "/cart") return { type: "cart" };
-  if (path.startsWith("/checkout")) return { type: "checkout" };
-  if (path === "/wishlist") return { type: "wishlist" };
-  if (path === "/about") return { type: "about" };
-  if (path === "/shipping") return { type: "shipping" };
-  if (path === "/returns") return { type: "returns" };
-  if (path === "/size-guide") return { type: "size-guide" };
-  if (path === "/faq") return { type: "faq" };
-  if (path === "/contact") return { type: "contact" };
-  if (path.startsWith("/admin")) {
-    const section = path.split("/")[2] || undefined;
+  if (clean === "/cart") return { type: "cart" };
+  if (clean.startsWith("/checkout")) return { type: "checkout" };
+  if (clean === "/wishlist") return { type: "wishlist" };
+  if (clean === "/about") return { type: "about" };
+  if (clean === "/shipping") return { type: "shipping" };
+  if (clean === "/returns") return { type: "returns" };
+  if (clean === "/size-guide") return { type: "size-guide" };
+  if (clean === "/faq") return { type: "faq" };
+  if (clean === "/contact") return { type: "contact" };
+  if (clean.startsWith("/admin")) {
+    const section = clean.split("/")[2] || undefined;
     return { type: "admin", section };
   }
 
   return { type: "home" };
 }
 
-export function navigate(page: PageRoute) {
-  let hash = "#/";
+export function routeToPath(page: PageRoute): string {
   switch (page.type) {
-    case "home":
-      hash = "#/";
-      break;
-    case "shop":
-      hash = page.category ? `#/shop/${page.category}` : "#/shop";
-      break;
-    case "product":
-      hash = `#/product/${page.id}`;
-      break;
-    case "cart":
-      hash = "#/cart";
-      break;
-    case "checkout":
-      hash = "#/checkout";
-      break;
-    case "wishlist":
-      hash = "#/wishlist";
-      break;
-    case "about":
-      hash = "#/about";
-      break;
-    case "shipping":
-      hash = "#/shipping";
-      break;
-    case "returns":
-      hash = "#/returns";
-      break;
-    case "size-guide":
-      hash = "#/size-guide";
-      break;
-    case "faq":
-      hash = "#/faq";
-      break;
-    case "contact":
-      hash = "#/contact";
-      break;
-    case "admin":
-      hash = page.section ? `#/admin/${page.section}` : "#/admin/dashboard";
-      break;
+    case "home": return "/";
+    case "shop": return page.category ? `/shop/${page.category}` : "/shop";
+    case "product": return `/product/${page.handle}`;
+    case "cart": return "/cart";
+    case "checkout": return "/checkout";
+    case "wishlist": return "/wishlist";
+    case "about": return "/about";
+    case "shipping": return "/shipping";
+    case "returns": return "/returns";
+    case "size-guide": return "/size-guide";
+    case "faq": return "/faq";
+    case "contact": return "/contact";
+    case "admin": return page.section ? `/admin/${page.section}` : "/admin";
   }
+}
+
+export function navigate(page: PageRoute) {
+  const path = routeToPath(page);
   if (typeof window !== "undefined") {
-    window.location.hash = hash;
+    // Use window.location for proper Next.js routing
+    // The cache in shopify-queries.ts ensures data doesn't re-fetch
+    window.location.href = path;
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 }
@@ -97,7 +76,7 @@ export function getPageKey(page: PageRoute): string {
     case "shop":
       return `shop-${page.category || "all"}`;
     case "product":
-      return `product-${page.id}`;
+      return `product-${page.handle}`;
     case "cart":
       return "cart";
     case "checkout":
